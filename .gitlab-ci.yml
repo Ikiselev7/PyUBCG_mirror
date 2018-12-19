@@ -3,3 +3,4 @@ pyubcg:
     - apt-get update && apt-get install -y python3
     - ./install_venv.sh
     - ./venv.sh
+  allow_failure: false
