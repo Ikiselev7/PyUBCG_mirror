@@ -8,4 +8,5 @@ pyubcg:
     - pip3 install virtualenv
     - chmod +x install_venv.sh
     - ./install_venv.sh
-    - ./venv.sh
+    - . ./venv.sh
+    - pytest

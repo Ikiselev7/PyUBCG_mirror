@@ -1,0 +1,5 @@
+project_name: PyUBCG
+project_folder: PyUBCG
+fasta_input_folder: fasta_input
+prodigal_output: prodigal_output
+
