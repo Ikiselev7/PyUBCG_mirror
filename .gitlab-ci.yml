@@ -9,4 +9,7 @@ pyubcg:
     - chmod +x install_venv.sh
     - ./install_venv.sh
     - . ./venv.sh
+    - mkdir logs
+    - pytest
+    - pylint src/
     - pytest

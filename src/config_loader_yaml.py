@@ -1,22 +1,26 @@
+# -*- coding: utf-8 -*-
+"""
+    yaml config loader
+
+"""
+
 import yaml
-import argparse
-
-from src.ABC_config_loader import ConfigLoaderABC
-
+#pylint: disable=cyclic-import
+from src.abc_config_loader import ConfigLoaderABC
+#pylint: enable=cyclic-import
 
 class ConfigLoaderYaml(ConfigLoaderABC):
-
-    @staticmethod
-    def load_config(path):
+    """
+    Class to load config object from .yaml file
+    """
+    def load_config(self, path: str, args):
+        """
+        Method to load config from .yaml file
+        :param path: path to config
+        :param args: Namespace with args from commandline
+        :return: config object
+        """
         with open(path) as yaml_conf:
-            config = yaml.load(yaml_conf)
-
-        # To run program with arguments from command line
-        # probably i should place it in another place, like __main__.py
-        # and pass it like argument to this function
-        parser = argparse.ArgumentParser(description='app')
-        parser.add_argument('--project_name', default='PyUBCG')
-        args = parser.parse_args()
+            self.config = yaml.load(yaml_conf)
         for key, value in args.__dict__.items():
-            config[key] = value
-        return config
+            self.config[key] = value
