@@ -28,3 +28,4 @@ class ProdigalABC(UtilWrapperABC):
 
     def run(self, file_path: str, **kwargs):
         raise NotImplementedError
+    

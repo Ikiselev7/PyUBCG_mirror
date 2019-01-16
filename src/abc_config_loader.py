@@ -4,8 +4,10 @@
 """
 
 import abc
+import logging
 
 SUPPORTED_CONFIG_FORMATS = ['yaml']
+LOGGER = logging.getLogger('PyUBCG.config_loader_yaml')
 
 class ConfigLoaderABC(abc.ABC):
     """
@@ -39,5 +41,6 @@ class ConfigLoaderABC(abc.ABC):
 
     def __getattr__(self, item: str):
         if item not in self.config:
-            raise KeyError('Value not in config')
+            LOGGER.error('Value %s not in config' % item)
+            return None
         return self.config[item]
