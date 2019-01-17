@@ -20,8 +20,8 @@ class Prodigal(ProdigalABC):
     def __init__(self, config):
         self._config = config
         self._project_dir = config.project_folder
-        self._input_path = self._project_dir + os.sep + config.fasta_input_folder
-        self._output_path = self._project_dir + os.sep + config.prodigal_output
+        self._input_path = config.fasta_input_folder
+        self._output_path = config.prodigal_output
         self._translation_table = config.prodigal_translation_table
         self._nuc_prefix = self._config.nuc_prefix
         self._pro_prefix = self._config.pro_prefix

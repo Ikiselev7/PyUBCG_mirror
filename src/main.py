@@ -39,8 +39,8 @@ class Main:
         :return:
         """
         parser = argparse.ArgumentParser(description='app')
+        parser.add_argument('-i', '--input_file')
         parser.add_argument('-c', '--config', default='config/config.yaml')
-        parser.add_argument('-i', '--input_folder', default='fasta_input/')
         parser.add_argument('-l', '--label', default=None)
         parser.add_argument('-a', '--acc', default=None)
         parser.add_argument('-t', '--taxon', default=None)
@@ -56,7 +56,7 @@ class Main:
         """
         data = {}
         features = self._load_features(file_path)
-        with open(f'{self._config.hmmsearch_output}/{file_path}') as hmm_output:
+        with open(f'{self._config.hmmsearch_output}/{file_path}.out') as hmm_output:
             while True:
                 line = hmm_output.readline()
                 if not line:
@@ -66,17 +66,17 @@ class Main:
                 if all(i in line.split() for i in ['E-value', 'score', 'bias', 'E-value', 'score']):
                     hmm_output.readline()
                     line = hmm_output.readline().split()
-                    e_value = line[0]
+                    e_value = float(line[0])
                     index = line[8].split('_')[-1]
                     full_name = line[8]
-                    feature_pro = features[full_name][self._config.gene_pro]
-                    feature_nuc = features[full_name][self._config.gene_nuc]
+                    feature_pro = features[full_name][self._config.pro_prefix]
+                    feature_nuc = features[full_name][self._config.nuc_prefix]
                     # from UBCG code is not clear what for stand here 1
                     data[query] = [1, [
                         index, feature_pro, feature_nuc, e_value
                     ]]
 
-        bcg = json.dumps({
+        bcg = [
             {'uid': str(time.time())},  # in UBCG could be specified as arg
             {'label': self._config.label},
             {'accession': self._config.accesion},
@@ -101,14 +101,14 @@ class Main:
                 ]}
             },
             {'data': data},
-        })
+        ]
 
         with open(f'extract_to_json/{file_path}', 'w') as bcg_file:
             json.dump(bcg, bcg_file)
 
 
     def _load_features(self, file_path):
-        features_folders = self._config.gene_pro, self._config.gene_nuc
+        features_folders = self._config.nuc_prefix, self._config.pro_prefix
         genes = {}
         for feature in features_folders:
             with open(f'{self._config.prodigal_output}/{feature}/{file_path}') as feature_file:
@@ -116,7 +116,8 @@ class Main:
                 for line in data:
                     if line.startswith('>'):
                         chunk = line.split()[0][1:]
-                        genes[chunk] = {}
+                        if chunk not in genes:
+                            genes[chunk] = {features_folders[0]: '', features_folders[1]: ''}
                     else:
                         genes[chunk][feature] = genes[chunk].get(feature, '') + line.strip()
         return genes
@@ -128,16 +129,18 @@ class Main:
         :return:
         """
 
-    def run(self, file_path):
+    def extract(self):
         """
         Main method to perform all work
         :return:
         """
+        file_path = self._config.input_file.split('/')[-1]
         self._prodigal.run(file_path)
         self._hmmsearch.run(file_path)
         self._process_hmm_output_to_json(file_path)
 
 if __name__ == '__main__':
     APP = Main()
+
     # APP._process_hmm_output_to_json('CP012646_s_GCA_001281025.1_KCOM_1350.fasta')
     # app.run()
