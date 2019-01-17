@@ -45,6 +45,7 @@ class Main:
         parser.add_argument('-a', '--acc', default=None)
         parser.add_argument('-t', '--taxon', default=None)
         parser.add_argument('-s', '--strain', default=None)
+        parser.add_argument('--type', default=None, type=bool)
         self._args = parser.parse_args()
 
 
@@ -66,15 +67,16 @@ class Main:
                 if all(i in line.split() for i in ['E-value', 'score', 'bias', 'E-value', 'score']):
                     hmm_output.readline()
                     line = hmm_output.readline().split()
-                    e_value = float(line[0])
-                    index = line[8].split('_')[-1]
+                    e_value = line[0].replace('E', 'e')  # lowercase e is in original ubcg
+                    index = int(line[8].split('_')[-1])
                     full_name = line[8]
                     feature_pro = features[full_name][self._config.pro_prefix]
                     feature_nuc = features[full_name][self._config.nuc_prefix]
                     # from UBCG code is not clear what for stand here 1
-                    data[query] = [1, [
-                        index, feature_pro, feature_nuc, e_value
-                    ]]
+                    if query in self._config.ubcg_gene:
+                        data[query] = [1, [
+                            index, feature_pro, feature_nuc, e_value
+                        ]]
 
         bcg = [
             {'uid': str(time.time())},  # in UBCG could be specified as arg
@@ -119,6 +121,8 @@ class Main:
                         if chunk not in genes:
                             genes[chunk] = {features_folders[0]: '', features_folders[1]: ''}
                     else:
+                        if '*' in line:
+                            line = line.replace('*', '')
                         genes[chunk][feature] = genes[chunk].get(feature, '') + line.strip()
         return genes
 

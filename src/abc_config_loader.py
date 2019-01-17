@@ -41,6 +41,6 @@ class ConfigLoaderABC(abc.ABC):
 
     def __getattr__(self, item: str):
         if item not in self.config:
-            LOGGER.error('Value %s not in config' % item)
+            LOGGER.error('Value %s not in config', item)
             return None
         return self.config[item]

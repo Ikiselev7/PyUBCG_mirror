@@ -7,7 +7,9 @@ import os
 import subprocess
 import logging
 
+#pylint: disable=cyclic-import
 from src.abc_hmmsearch import HmmsearchABC
+#pylint: enable=cyclic-import
 
 LOGGER = logging.getLogger('PyUBCG.hmm_wrapper')
 

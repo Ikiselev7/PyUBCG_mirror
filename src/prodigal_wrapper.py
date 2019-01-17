@@ -7,7 +7,6 @@
 
 import subprocess
 import logging
-import os
 
 from src.abc_prodigal import ProdigalABC
 
