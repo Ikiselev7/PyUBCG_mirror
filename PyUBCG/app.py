@@ -10,9 +10,9 @@ import time
 # import logging
 import logging.config
 
-from src.abc_prodigal import ProdigalABC
-from src.abc_hmmsearch import HmmsearchABC
-from src.abc_config_loader import ConfigLoaderABC
+from PyUBCG.abc_prodigal import ProdigalABC
+from PyUBCG.abc_hmmsearch import HmmsearchABC
+from PyUBCG.abc_config_loader import ConfigLoaderABC
 
 logging.config.fileConfig('config/logging.conf')
 LOGGER = logging.getLogger('PyUBCG')
@@ -38,16 +38,64 @@ class Main:
         Load arguments from command line, overwrite params in config
         :return:
         """
-        parser = argparse.ArgumentParser(description='app')
-        parser.add_argument('-i', '--input_file')
-        parser.add_argument('-c', '--config', default='config/config.yaml')
-        parser.add_argument('-l', '--label', default=None)
-        parser.add_argument('-a', '--acc', default=None)
-        parser.add_argument('-t', '--taxon', default=None)
-        parser.add_argument('-s', '--strain', default=None)
-        parser.add_argument('--type', default=None, type=bool)
-        self._args = parser.parse_args()
+        parser = argparse.ArgumentParser(
+            description='PyUBCG is python implementation of UBCG pipeline https://www.ezbiocloud.net/tools/ubcg',
+            prog='pyubcg'
+        )
+        subparsers = parser.add_subparsers(
+            help='choose one of this command',
+            dest='command'
+        )
 
+        parser_extract = subparsers.add_parser(
+            'extract',
+            description='Converting genome assemblies or contigs (fasta) to bcg files',
+            help='converts a fasta file to bcg file using prodigal and hmmsearch')
+        parser_extract.add_argument(
+            '-i', '--input_file',
+            required=True,
+            help='Path to fasta file to be extracted'
+        )
+        parser_extract.add_argument(
+            '-c', '--config',
+            default='config/config.yaml',
+            help='Specify path to your config if it is not default '
+        )
+        parser_extract.add_argument(
+            '-l', '--label',
+            default=None,
+            help='full label of the strain/genome. It should be encompassed by single quotes (e.g. --label “Escherichia coli O157 876”).'
+        )
+        parser_extract.add_argument(
+            '-a', '--acc',
+            default=None,
+            help='accession of a genome sequence. Usually, NCBI’s assembly accession is used for public domain data.'
+        )
+        parser_extract.add_argument(
+            '-t', '--taxon',
+            default=None,
+            help='name of species (e.g. --taxon “Escherichia coli”)'
+        )
+        parser_extract.add_argument(
+            '-s', '--strain',
+            default=None,
+            help='name of the strain (e.g. --strain “JC 126”)'
+        )
+        parser_extract.add_argument(
+            '--type',
+            default=False,
+            action='store_true',
+            help='add this flag if a strain is the type strain of species or subspecies (e.g. --type)'
+        )
+
+        parser_align = subparsers.add_parser(
+            'align',
+            description='Generating multiple alignments from bcg files',
+            help='align help'
+        )
+
+
+        self._args = parser.parse_args()
 
     def _process_hmm_output_to_json(self, file_path):
         """
@@ -81,8 +129,8 @@ class Main:
         bcg = [
             {'uid': str(time.time())},  # in UBCG could be specified as arg
             {'label': self._config.label},
-            {'accession': self._config.accesion},
-            {'taxon_name': self._config.taxon_name},
+            {'accession': self._config.acc},
+            {'taxon_name': self._config.taxon},
             {'ncbi_name': None},  # is hardcode in UBCG
             {'strain_name': self._config.strain},
             {'strain_type': self._config.type},
@@ -90,7 +138,7 @@ class Main:
             {'taxonomy': self._config.taxonomy},
             {'UBCG_target_gene_number|version': '92|v3.0'},  # is hardcode in UBCG
             {'n_ubcg': len(set(self._config.ubcg_gene))},
-            {'n_genes': None},  # len of hmm result
+            {'n_genes': len(data)},  # len of hmm result
             {'n_paralog_ubcg': None},  # UbcgDomain Integer getN_paralog_ubcg()
             {'data_structure': {
                 'gene_name': [
@@ -126,12 +174,24 @@ class Main:
                         genes[chunk][feature] = genes[chunk].get(feature, '') + line.strip()
         return genes
 
+    def align(self):
+        """
+        Align step
+        :return:
+        """
 
     def bulk_run(self):
         """
         method to process extract step on every files in input folder
         :return:
         """
+
+    def run(self):
+        if self._config.command == 'extract':
+            self.extract()
+        if self._config.command == 'align':
+            self.align()
+
 
     def extract(self):
         """

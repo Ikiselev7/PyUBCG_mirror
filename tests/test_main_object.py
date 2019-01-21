@@ -3,7 +3,7 @@ import shutil
 import builtins
 import argparse
 from unittest import mock
-from src.main import Main
+from PyUBCG.app import Main
 
 
 
@@ -27,3 +27,5 @@ def test_prodigal_like_tool_presence(main_object):
 
 def test_hmmsearch_like_tool_presence(main_object):
     assert main_object._hmmsearch.__class__.__name__ == 'Hmmsearch'
+
+

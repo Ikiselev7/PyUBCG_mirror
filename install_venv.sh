@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-virtualenv -q -p `which python3` PyUBCG
+virtualenv -q -p `which python3` pyubcg_venv
 PyUBCG/bin/pip install -r requirements.txt
 
 echo "#!/usr/bin/env bash" > venv.sh

@@ -2,8 +2,8 @@ import pytest
 import argparse
 import shutil
 from unittest import mock
-from src.config_loader_yaml import ConfigLoaderYaml
-from src.main import Main
+from PyUBCG.config_loader_yaml import ConfigLoaderYaml
+from PyUBCG.app import Main
 
 
 

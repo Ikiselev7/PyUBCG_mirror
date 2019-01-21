@@ -9,7 +9,7 @@
 # import subprocess
 # import logging
 
-from src.abc_program_wrapper import UtilWrapperABC
+from PyUBCG.abc_program_wrapper import UtilWrapperABC
 
 
 class ProdigalABC(UtilWrapperABC):
@@ -21,7 +21,7 @@ class ProdigalABC(UtilWrapperABC):
         tool_type = config.prodigal_like_tool
         if tool_type == 'prodigal':
             # pylint: disable=cyclic-import
-            from src.prodigal_wrapper import Prodigal
+            from PyUBCG.prodigal_wrapper import Prodigal
             # pylint: enable=cyclic-import
             _impl = Prodigal
         return super(ProdigalABC, cls).__new__(_impl)

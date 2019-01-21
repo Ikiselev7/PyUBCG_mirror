@@ -21,7 +21,7 @@ class ConfigLoaderABC(abc.ABC):
                 'Config format is not supported. Use one of: {}'.format(
                     ', '.join(SUPPORTED_CONFIG_FORMATS)))
         if config_format == 'yaml':
-            from src.config_loader_yaml import ConfigLoaderYaml
+            from PyUBCG.config_loader_yaml import ConfigLoaderYaml
             _conf = ConfigLoaderYaml
         return super().__new__(_conf)
 

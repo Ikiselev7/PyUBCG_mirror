@@ -8,7 +8,7 @@
 import subprocess
 import logging
 
-from src.abc_prodigal import ProdigalABC
+from PyUBCG.abc_prodigal import ProdigalABC
 
 LOGGER = logging.getLogger('PyUBCG.ProdigalWrapper')
 
@@ -39,5 +39,7 @@ class Prodigal(ProdigalABC):
             ['prodigal', '-i', '%s/%s' % (self._input_path, file_path),
              '-a', '%s/%s/%s' % (self._output_path, self._pro_prefix, file_path),
              '-d', '%s/%s/%s' % (self._output_path, self._nuc_prefix, file_path),
-             '-q'])
+             '-q'],
+            stdout=subprocess.DEVNULL
+        )
         process.wait()

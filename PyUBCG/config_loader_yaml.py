@@ -6,7 +6,7 @@
 
 import yaml
 #pylint: disable=cyclic-import
-from src.abc_config_loader import ConfigLoaderABC
+from PyUBCG.abc_config_loader import ConfigLoaderABC
 #pylint: enable=cyclic-import
 
 class ConfigLoaderYaml(ConfigLoaderABC):

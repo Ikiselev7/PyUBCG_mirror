@@ -4,7 +4,7 @@ import builtins
 import argparse
 import subprocess
 from unittest import mock
-from src.main import Main
+from PyUBCG.app import Main
 
 
 
