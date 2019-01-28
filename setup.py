@@ -33,7 +33,7 @@ setup(
         ],
     keywords='phylogenetic tree',
     packages=find_packages(exclude=['tests']),
-    install_requires=['pyyaml'],
+    install_requires=['pyyaml', 'click'],
     extras_require={
             'dev': ['pytest', 'pylint'],
         },

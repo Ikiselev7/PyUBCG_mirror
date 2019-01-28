@@ -7,3 +7,7 @@ prodigal_like_tool: prodigal
 hmmsearch_like_tool: hmmsearch
 prodigal_output: prodigal_output
 prodigal_translation_table: 11
+hmmsearch_output: hmmsearch_output
+hmm_base: UBCG.hmm
+nuc_prefix: gene_nuc
+pro_prefix: gene_pro

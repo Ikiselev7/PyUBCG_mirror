@@ -6,16 +6,14 @@ Entry point to module
 
 import sys
 
-from PyUBCG.app import Main
+from PyUBCG.app import cli
 
 
 def main():
     if len(sys.argv) < 2:
         print('Wrong argument\nFor usage details type:\n\tpyubcg --help')
         exit(1)
-
-    APP = Main()
-    APP.run()
+    cli()
 
 
 if __name__ == '__main__':

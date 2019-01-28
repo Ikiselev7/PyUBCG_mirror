@@ -4,11 +4,11 @@
 
 """
 
-import argparse
 import json
 import time
 # import logging
 import logging.config
+import click
 
 from PyUBCG.abc_prodigal import ProdigalABC
 from PyUBCG.abc_hmmsearch import HmmsearchABC
@@ -22,80 +22,15 @@ class Main:
     """
     Main class to process extraction step. Equal to UBCG extract
     """
-
-    def __init__(self):
+    def __init__(self, **kwargs):
         # pylint: disable=E0110
         LOGGER.info('Initialize Main object')
         LOGGER.info('Load config')
-        self._load_args()
+        self._args = kwargs
         self._config = ConfigLoaderABC(self._args)
         LOGGER.info('Initialize Program wrappers')
         self._prodigal = ProdigalABC(self._config)
         self._hmmsearch = HmmsearchABC(self._config)
-
-    def _load_args(self):
-        """
-        Load arguments from command line, overwrite params in config
-        :return:
-        """
-        parser = argparse.ArgumentParser(
-            description='PyUBCG is python implementation of UBCG pipeline https://www.ezbiocloud.net/tools/ubcg',
-            prog='pyubcg'
-        )
-        subparsers = parser.add_subparsers(
-            help='choose one of this command',
-            dest='command'
-        )
-
-        parser_extract = subparsers.add_parser(
-            'extract',
-            description='Converting genome assemblies or contigs (fasta) to bcg files',
-            help='converts a fasta file to bcg file using prodigal and hmmsearch')
-        parser_extract.add_argument(
-            '-i', '--input_file',
-            required=True,
-            help='Path to fasta file to be extracted'
-        )
-        parser_extract.add_argument(
-            '-c', '--config',
-            default='config/config.yaml',
-            help='Specify path to your config if it is not default '
-        )
-        parser_extract.add_argument(
-            '-l', '--label',
-            default=None,
-            help='full label of the strain/genome. It should be encompassed by single quotes (e.g. --label “Escherichia coli O157 876”).'
-        )
-        parser_extract.add_argument(
-            '-a', '--acc',
-            default=None,
-            help='accession of a genome sequence. Usually, NCBI’s assembly accession is used for public domain data.'
-        )
-        parser_extract.add_argument(
-            '-t', '--taxon',
-            default=None,
-            help='name of species (e.g. --taxon “Escherichia coli”)'
-        )
-        parser_extract.add_argument(
-            '-s', '--strain',
-            default=None,
-            help='name of the strain (e.g. --strain “JC 126”)'
-        )
-        parser_extract.add_argument(
-            '--type',
-            default=False,
-            action='store_true',
-            help='add this flag if a strain is the type strain of species or subspecies (e.g. --type)'
-        )
-
-        parser_align = subparsers.add_parser(
-            'align',
-            description='Generating multiple alignments from bcg files',
-            help='align help'
-        )
-
-
-        self._args = parser.parse_args()
 
     def _process_hmm_output_to_json(self, file_path):
         """
@@ -156,7 +91,6 @@ class Main:
         with open(f'extract_to_json/{file_path}', 'w') as bcg_file:
             json.dump(bcg, bcg_file)
 
-
     def _load_features(self, file_path):
         features_folders = self._config.nuc_prefix, self._config.pro_prefix
         genes = {}
@@ -192,7 +126,6 @@ class Main:
         if self._config.command == 'align':
             self.align()
 
-
     def extract(self):
         """
         Main method to perform all work
@@ -203,8 +136,33 @@ class Main:
         self._hmmsearch.run(file_path)
         self._process_hmm_output_to_json(file_path)
 
+
+@click.command()
+@click.argument('command', nargs=1)
+@click.option('-i', '--input_file', required=True, help='Path to fasta file to be extracted')
+@click.option('-c', '--config', required=False, default='config/config.yaml',
+              help='Specify path to your config if it is not default ')
+@click.option('-l', '--label', default=None,
+              help='full label of the strain/genome. '
+                   'It should be encompassed by single quotes (e.g. --label “Escherichia coli O157 876”).')
+@click.option('-a', '--acc', default=None, help='accession of a genome sequence. '
+                                                'Usually, NCBI’s assembly accession is used for public domain data.')
+@click.option('-t', '--taxon', default=None, help='name of species (e.g. --taxon “Escherichia coli”)')
+@click.option('-tax', '--taxonomy', default=None, help='Taxonomy')
+@click.option('-s', '--strain', default=None, help='name of the strain (e.g. --strain “JC 126”)')
+@click.option('--type', default=False, is_flag=True,
+              help='add this flag if a strain is the type strain of species or subspecies (e.g. --type)')
+def cli(**kwargs):
+    """
+    PyUBCG is python implementation of UBCG pipeline https://www.ezbiocloud.net/tools/ubcg \n
+    COMMAND: extract|align
+    """
+    app = Main(**kwargs)
+    app.run()
+
+
 if __name__ == '__main__':
-    APP = Main()
+    cli()
 
     # APP._process_hmm_output_to_json('CP012646_s_GCA_001281025.1_KCOM_1350.fasta')
     # app.run()

@@ -22,5 +22,5 @@ class ConfigLoaderYaml(ConfigLoaderABC):
         """
         with open(path) as yaml_conf:
             self.config = yaml.load(yaml_conf)
-        for key, value in args.__dict__.items():
+        for key, value in args.items():
             self.config[key] = value

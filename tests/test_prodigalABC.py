@@ -1,26 +1,21 @@
-import pytest
 import shutil
 import builtins
-import argparse
 import subprocess
 from unittest import mock
-from PyUBCG.app import Main
+import pytest
 
+from PyUBCG.app import Main
 
 
 @pytest.fixture
 def prodigal_object():
-    with mock.patch('argparse.ArgumentParser.parse_args',
-                    return_value=argparse.Namespace(
-                        config='config/config.yaml',
-                        input_folder='fasta_input/')):
-        with mock.patch('shutil.which', return_value=True):
-            with mock.patch('builtins.open', return_value=open('tests/config/files/test_config.yaml')):
-                return Main()._prodigal
+    with mock.patch('shutil.which', return_value=True):
+        return Main(config='tests/config/files/test_config.yaml')._prodigal
+
 
 class MockedPopen:
 
-    def __init__(self, args, **kwargs):
+    def __init__(self, args):
         self.args = args
         self.returncode = 0
 
@@ -45,6 +40,7 @@ class MockedPopen:
 
 def test_prodigal_setup(prodigal_object):
     assert prodigal_object._project_dir == 'PyUBCG'
+
 
 @mock.patch('subprocess.Popen', MockedPopen)
 def test_run_method(prodigal_object):

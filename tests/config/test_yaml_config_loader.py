@@ -1,20 +1,14 @@
-import pytest
-import argparse
 import shutil
 from unittest import mock
+import pytest
 from PyUBCG.config_loader_yaml import ConfigLoaderYaml
 from PyUBCG.app import Main
 
 
-
 @pytest.fixture
 def main_object():
-    with mock.patch('argparse.ArgumentParser.parse_args',
-                    return_value=argparse.Namespace(
-                        config='config/config.yaml',
-                        input_folder='fasta_input/')):
-        with mock.patch('shutil.which', return_value=True):
-            return Main()
+    with mock.patch('shutil.which', return_value=True):
+        return Main(config='tests/config/files/test_config.yaml', input_folder='fasta_input/')
 
 
 def test_yaml_config(main_object):

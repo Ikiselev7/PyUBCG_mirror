@@ -9,13 +9,14 @@ import logging
 SUPPORTED_CONFIG_FORMATS = ['yaml']
 LOGGER = logging.getLogger('PyUBCG.config_loader_yaml')
 
+
 class ConfigLoaderABC(abc.ABC):
     """
     ABC class to load config object from file
     """
 
     def __new__(cls, args):
-        config_format = args.config.split('.')[-1]
+        config_format = args['config'].split('.')[-1]
         if config_format not in SUPPORTED_CONFIG_FORMATS:
             raise ValueError(
                 'Config format is not supported. Use one of: {}'.format(
@@ -26,7 +27,7 @@ class ConfigLoaderABC(abc.ABC):
         return super().__new__(_conf)
 
     def __init__(self, args):
-        path = args.config
+        path = args['config']
         self.load_config(path, args)
 
     @abc.abstractmethod

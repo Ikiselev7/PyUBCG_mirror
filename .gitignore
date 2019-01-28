@@ -110,3 +110,9 @@ venv.bak/
 
 # api key to GCP
 credentials.json
+
+# PyUBCG folders
+extract_to_json/
+fasta_input/
+hmmsearch_output/
+prodigal_output/
