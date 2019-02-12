@@ -8,19 +8,21 @@ import subprocess
 import logging
 
 #pylint: disable=cyclic-import
-from PyUBCG.abc_hmmsearch import HmmsearchABC
+from PyUBCG.abc import AbstractHmmsearch
 #pylint: enable=cyclic-import
 
 LOGGER = logging.getLogger('PyUBCG.hmm_wrapper')
 
-class Hmmsearch(HmmsearchABC):
+class Hmmsearch(AbstractHmmsearch):
     """
     Wrapper to hmmsearch
     """
     def __init__(self, config):
         self.config = config
-        self._output_path = config.hmmsearch_output
-        self._input_path = config.prodigal_output + os.sep + config.pro_prefix
+        self._dirpath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self._output_folder = os.path.join(self._dirpath, config.hmmsearch_output)
+        self._input_path = os.path.join(*(self._dirpath, config.prodigal_output,
+                                          config.pro_prefix))
         self._hmm_base = config.hmm_base
 
 
@@ -31,9 +33,9 @@ class Hmmsearch(HmmsearchABC):
         :kwargs: args to run program with
         :return:
         """
-        LOGGER.info('Process %s file prodigal.', file_path)
+        LOGGER.info('Process %s file with hmmsearch.', file_path)
         process = subprocess.Popen(
             ['hmmsearch', '--noali', '--cut_tc', '-o',
-             f'{self._output_path}/{file_path}.out', self._hmm_base,
-             f'{self._input_path}/{file_path}'])
+             os.path.join(self._output_folder, file_path+'.out'), self._hmm_base,
+             os.path.join(self._input_path, file_path)])
         process.wait()

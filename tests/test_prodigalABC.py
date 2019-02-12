@@ -38,10 +38,6 @@ class MockedPopen:
         return self.returncode
 
 
-def test_prodigal_setup(prodigal_object):
-    assert prodigal_object._project_dir == 'PyUBCG'
-
-
 @mock.patch('subprocess.Popen', MockedPopen)
 def test_run_method(prodigal_object):
     with subprocess.Popen(['prodigal -i some_file -a pro -d nuc']) as proc:

@@ -1,7 +1,7 @@
 import shutil
 from unittest import mock
 import pytest
-from PyUBCG.config_loader_yaml import ConfigLoaderYaml
+from PyUBCG.config_loader_yaml import AbstractConfigLoaderYaml
 from PyUBCG.app import Main
 
 
@@ -13,6 +13,6 @@ def main_object():
 
 def test_yaml_config(main_object):
     with mock.patch('builtins.open', return_value=open('tests/config/files/test_config.yaml')):
-        config = ConfigLoaderYaml(main_object._args)
+        config = AbstractConfigLoaderYaml(main_object._args)
         assert config.param1 == 'value'
         assert config.input_folder == 'fasta_input/'

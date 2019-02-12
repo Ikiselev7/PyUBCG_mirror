@@ -10,6 +10,7 @@ from PyUBCG.app import cli
 
 
 def main():
+    """entry point"""
     if len(sys.argv) < 2:
         print('Wrong argument\nFor usage details type:\n\tpyubcg --help')
         exit(1)

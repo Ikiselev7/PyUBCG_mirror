@@ -6,13 +6,12 @@
 
 import json
 import time
+import os
 # import logging
 import logging.config
 import click
 
-from PyUBCG.abc_prodigal import ProdigalABC
-from PyUBCG.abc_hmmsearch import HmmsearchABC
-from PyUBCG.abc_config_loader import ConfigLoaderABC
+from PyUBCG.abc import AbstractProdigal, AbstractHmmsearch, AbstractConfigLoader
 
 logging.config.fileConfig('config/logging.conf')
 LOGGER = logging.getLogger('PyUBCG')
@@ -26,11 +25,33 @@ class Main:
         # pylint: disable=E0110
         LOGGER.info('Initialize Main object')
         LOGGER.info('Load config')
+        self._dirpath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self._args = kwargs
-        self._config = ConfigLoaderABC(self._args)
+        self._config = AbstractConfigLoader(self._args)
+        LOGGER.info('Create program structure')
+        self._init_program_structure()
         LOGGER.info('Initialize Program wrappers')
-        self._prodigal = ProdigalABC(self._config)
-        self._hmmsearch = HmmsearchABC(self._config)
+        self._prodigal = AbstractProdigal(self._config)
+        self._hmmsearch = AbstractHmmsearch(self._config)
+
+
+    def _init_program_structure(self):
+        prodigal_folder = os.path.join(self._dirpath, self._config.prodigal_output)
+        if not os.path.exists(prodigal_folder):
+            os.makedirs(prodigal_folder)
+        prodigal_pro = os.path.join(prodigal_folder, self._config.pro_prefix)
+        prodigal_nuc = os.path.join(prodigal_folder, self._config.nuc_prefix)
+        if not os.path.exists(prodigal_pro):
+            os.makedirs(prodigal_pro)
+        if not os.path.exists(prodigal_nuc):
+            os.makedirs(prodigal_nuc)
+        hmm_output = os.path.join(self._dirpath, self._config.hmmsearch_output)
+        if not os.path.exists(hmm_output):
+            os.makedirs(hmm_output)
+        output_folder = os.path.join(self._dirpath, self._config.output_folder)
+        if not os.path.exists(output_folder):
+            os.makedirs(output_folder)
+
 
     def _process_hmm_output_to_json(self, file_path):
         """
@@ -40,7 +61,8 @@ class Main:
         """
         data = {}
         features = self._load_features(file_path)
-        with open(f'{self._config.hmmsearch_output}/{file_path}.out') as hmm_output:
+        with open(os.path.join(*(self._dirpath, self._config.hmmsearch_output,
+                                 file_path+'.out'))) as hmm_output:
             while True:
                 line = hmm_output.readline()
                 if not line:
@@ -49,8 +71,14 @@ class Main:
                     query = line.split()[1]
                 if all(i in line.split() for i in ['E-value', 'score', 'bias', 'E-value', 'score']):
                     hmm_output.readline()
+
                     line = hmm_output.readline().split()
-                    e_value = line[0].replace('E', 'e')  # lowercase e is in original ubcg
+                    if not line:
+                        continue
+                    if 'E' in line[0]:
+                        e_value = line[0].replace('E', 'e')
+                    else:
+                        e_value = line[0]
                     index = int(line[8].split('_')[-1])
                     full_name = line[8]
                     feature_pro = features[full_name][self._config.pro_prefix]
@@ -88,14 +116,16 @@ class Main:
             {'data': data},
         ]
 
-        with open(f'extract_to_json/{file_path}', 'w') as bcg_file:
+        with open(os.path.join(*(self._dirpath, self._config.output_folder,
+                                 file_path.rsplit()[0]+'.bcg')), 'w') as bcg_file:
             json.dump(bcg, bcg_file)
 
     def _load_features(self, file_path):
         features_folders = self._config.nuc_prefix, self._config.pro_prefix
         genes = {}
         for feature in features_folders:
-            with open(f'{self._config.prodigal_output}/{feature}/{file_path}') as feature_file:
+            with open(os.path.join(*(self._dirpath, self._config.prodigal_output,
+                                     feature, file_path))) as feature_file:
                 data = feature_file.readlines()
                 for line in data:
                     if line.startswith('>'):
@@ -121,6 +151,10 @@ class Main:
         """
 
     def run(self):
+        """
+        Entry point to program
+        :return:
+        """
         if self._config.command == 'extract':
             self.extract()
         if self._config.command == 'align':
@@ -131,12 +165,13 @@ class Main:
         Main method to perform all work
         :return:
         """
-        file_path = self._config.input_file.split('/')[-1]
+        file_path = self._config.input_file
         self._prodigal.run(file_path)
         self._hmmsearch.run(file_path)
         self._process_hmm_output_to_json(file_path)
 
 
+#pylint disable: line-too-long
 @click.command()
 @click.argument('command', nargs=1)
 @click.option('-i', '--input_file', required=True, help='Path to fasta file to be extracted')
@@ -159,6 +194,7 @@ def cli(**kwargs):
     """
     app = Main(**kwargs)
     app.run()
+#pylint enable: line-too-long
 
 
 if __name__ == '__main__':

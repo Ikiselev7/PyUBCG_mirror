@@ -3,6 +3,7 @@ project_folder: PyUBCG
 config: config/config.yaml
 fasta_input_folder: fasta_input
 prodigal_like_tool: prodigal
+output_folder: extract_output
 hmmsearch_like_tool: hmmsearch
 prodigal_output: prodigal_output
 prodigal_translation_table: 11

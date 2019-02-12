@@ -11,3 +11,4 @@ hmmsearch_output: hmmsearch_output
 hmm_base: UBCG.hmm
 nuc_prefix: gene_nuc
 pro_prefix: gene_pro
+output_folder: extract_output

@@ -32,16 +32,18 @@ setup(
             'Programming Language :: Python :: 3.7',
         ],
     keywords='phylogenetic tree',
-    packages=find_packages(exclude=['tests']),
-    install_requires=['pyyaml', 'click'],
+    packages=find_packages(),
+    install_requires=['Click==7.0', 'PyYAML==3.13', 'pylint', 'pytest'],
     extras_require={
             'dev': ['pytest', 'pylint'],
         },
-    entry_points={
-        'console_scripts': [
-            'pyubcg=PyUBCG.__main__:main',
-        ],
-    },
+    setup_requires=['pytest-runner', 'pytest', 'pytest-pylint'],
+    # tests_require=['pytest', 'pytest-asyncio', 'pytest-aiohttp', 'pytest-cov',
+    #                'pylint'],
+    # entry_points={
+    #     'console_scripts': [
+    #         'pyubcg=PyUBCG.__main__:main',
+    #     ],
+    # },
     test_suite='tests'
-
 )

@@ -6,10 +6,10 @@
 
 import yaml
 #pylint: disable=cyclic-import
-from PyUBCG.abc_config_loader import ConfigLoaderABC
+from PyUBCG.abc import AbstractConfigLoader
 #pylint: enable=cyclic-import
 
-class ConfigLoaderYaml(ConfigLoaderABC):
+class AbstractConfigLoaderYaml(AbstractConfigLoader):
     """
     Class to load config object from .yaml file
     """

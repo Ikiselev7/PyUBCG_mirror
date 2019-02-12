@@ -1,4 +1,4 @@
-pyyaml
-pytest
+Click==7.0
+PyYAML==3.13
 pylint
-click
+pytest

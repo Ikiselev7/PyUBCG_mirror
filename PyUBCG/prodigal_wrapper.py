@@ -7,23 +7,30 @@
 
 import subprocess
 import logging
+import os
 
-from PyUBCG.abc_prodigal import ProdigalABC
+from PyUBCG.abc import AbstractProdigal
 
 LOGGER = logging.getLogger('PyUBCG.ProdigalWrapper')
 
-class Prodigal(ProdigalABC):
+class Prodigal(AbstractProdigal):
     """
         Class-wrapper to run prodigal
     """
     def __init__(self, config):
         self._config = config
-        self._project_dir = config.project_folder
-        self._input_path = config.fasta_input_folder
-        self._output_path = config.prodigal_output
+        self._dirpath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+        self._input_path = os.path.join(*(self._dirpath, config.fasta_input_folder))
+        self._gene_pro_path = os.path.join(*(self._dirpath,
+                                             config.prodigal_output,
+                                             config.pro_prefix
+                                             ))
+        self._gene_nuc_path = os.path.join(*(self._dirpath,
+                                             config.prodigal_output,
+                                             config.nuc_prefix
+                                             ))
         self._translation_table = config.prodigal_translation_table
-        self._nuc_prefix = self._config.nuc_prefix
-        self._pro_prefix = self._config.pro_prefix
 
 
     def run(self, file_path: str, **kwargs) -> None:
@@ -34,11 +41,11 @@ class Prodigal(ProdigalABC):
         :param file_path: input file
         :return:
         """
-        LOGGER.info('Process %s file prodigal.', file_path)
+        LOGGER.info('Process %s file with prodigal.', file_path)
         process = subprocess.Popen(
             ['prodigal', '-i', '%s/%s' % (self._input_path, file_path),
-             '-a', '%s/%s/%s' % (self._output_path, self._pro_prefix, file_path),
-             '-d', '%s/%s/%s' % (self._output_path, self._nuc_prefix, file_path),
+             '-a', os.path.join(self._gene_pro_path, file_path),
+             '-d', os.path.join(self._gene_nuc_path, file_path),
              '-q'],
             stdout=subprocess.DEVNULL
         )
