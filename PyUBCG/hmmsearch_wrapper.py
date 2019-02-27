@@ -27,17 +27,16 @@ class Hmmsearch(AbstractHmmsearch):
                                           config['prefixes']['pro_prefix']))
         self._hmm_base = config['biological']['hmm_base']
 
-
-    def run(self, file_path: str, **kwargs) -> None:
+    def run(self, file_name: str, **kwargs) -> None:
         """
         Method to execute hmmsearch
-        :param path: some file here
+        :param file_name: some file here
         :kwargs: args to run program with
         :return:
         """
-        LOGGER.info('Process %s file with hmmsearch.', file_path)
+        LOGGER.info('Process %s file with hmmsearch.', file_name)
         process = subprocess.Popen(
             ['hmmsearch', '--noali', '--cut_tc', '-o',
-             os.path.join(self._output_folder, file_path+'.out'), self._hmm_base,
-             os.path.join(self._input_path, file_path)])
+             os.path.join(self._output_folder, file_name+'.out'), self._hmm_base,
+             os.path.join(self._input_path, file_name)])
         process.wait()

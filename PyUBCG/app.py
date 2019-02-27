@@ -11,7 +11,8 @@ import os
 import logging.config
 import click
 
-from PyUBCG.abc import AbstractProdigal, AbstractHmmsearch, AbstractConfigLoader
+from PyUBCG.abc import AbstractProdigal, AbstractHmmsearch, \
+    AbstractConfigLoader, AbstractMafft
 
 logging.config.fileConfig('config/logging.conf')
 LOGGER = logging.getLogger('PyUBCG')
@@ -25,7 +26,8 @@ class Main:
         # pylint: disable=E0110
         LOGGER.info('Initialize Main object')
         LOGGER.info('Load config')
-        self._dirpath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self._dirpath = \
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self._args = kwargs
         self._config = AbstractConfigLoader(self._args).get_config()
         LOGGER.info('Create program structure')
@@ -33,34 +35,25 @@ class Main:
         LOGGER.info('Initialize Program wrappers')
         self._prodigal = AbstractProdigal(self._config)
         self._hmmsearch = AbstractHmmsearch(self._config)
-
+        self._mafft = AbstractMafft(self._config)
 
     def _init_program_structure(self):
-        prodigal_folder = os.path.join(self._dirpath,
-                                       self._config['paths']['prodigal_output'])
-        if not os.path.exists(prodigal_folder):
-            os.makedirs(prodigal_folder)
-        prodigal_pro = os.path.join(prodigal_folder,
-                                    self._config['prefixes']['pro_prefix'])
-        prodigal_nuc = os.path.join(prodigal_folder,
-                                    self._config['prefixes']['nuc_prefix'])
-        if not os.path.exists(prodigal_pro):
-            os.makedirs(prodigal_pro)
-        if not os.path.exists(prodigal_nuc):
-            os.makedirs(prodigal_nuc)
-        hmm_output = os.path.join(self._dirpath,
-                                  self._config['paths']['hmmsearch_output'])
-        if not os.path.exists(hmm_output):
-            os.makedirs(hmm_output)
-        extract_output = os.path.join(self._dirpath,
-                                      self._config['paths']['extract_output'])
-        if not os.path.exists(extract_output):
-            os.makedirs(extract_output)
-        align_output = os.path.join(self._dirpath,
-                                    self._config['paths']['extract_output'])
-        if not os.path.exists(align_output):
-            os.makedirs(align_output)
-
+        for name_dir, path in self._config['paths'].items():
+            if 'output' in path:
+                folder_path = os.path.join(self._dirpath, path)
+                if not os.path.exists(folder_path):
+                    os.makedirs(folder_path)
+                if name_dir == 'prodigal_output':
+                    prodigal_pro = os.path.join(folder_path,
+                                                self._config['prefixes'][
+                                                    'pro_prefix'])
+                    prodigal_nuc = os.path.join(folder_path,
+                                                self._config['prefixes'][
+                                                    'nuc_prefix'])
+                    if not os.path.exists(prodigal_pro):
+                        os.makedirs(prodigal_pro)
+                    if not os.path.exists(prodigal_nuc):
+                        os.makedirs(prodigal_nuc)
 
     def _process_hmm_output_to_json(self, file_path):
         """
@@ -155,6 +148,8 @@ class Main:
         Align step
         :return:
         """
+        file_path = 'test.fasta'
+        self._mafft.run(file_path)
 
     def multiple_extract(self):
         """
@@ -190,6 +185,7 @@ def cli():
 @click.option('-t', '--taxon', default=None, help='name of species (e.g. --taxon “Escherichia coli”)')
 @click.option('-tax', '--taxonomy', default=None, help='Taxonomy')
 @click.option('-s', '--strain', default=None, help='name of the strain (e.g. --strain “JC 126”)')
+# @click.option('--type', default=None, help='add this flag if a strain is the type strain of species or subspecies (e.g. --type)')
 @click.option('--type', default=False, is_flag=True,
               help='add this flag if a strain is the type strain of species or subspecies (e.g. --type)')
 def extract(**kwargs):
@@ -199,8 +195,11 @@ def extract(**kwargs):
     app = Main(**kwargs)
     app.extract()
 
+
 @cli.command()
 @click.option('-bcg_dir', required=True, help="directory for bcg files that you want to include in the alignment.")
+@click.option('-c', '--config', required=False, default='config/config.yaml',
+              help='Specify path to your config if it is not default ')
 @click.option('-out_dir', help='directory where all output files will be')
 @click.option('-a', type=click.Choice(['nt', 'aa', 'codon', 'codon12']), help='''nt: nucleotide sequence alignment
 aa: amino acid sequence alignment
@@ -208,19 +207,19 @@ codon: codon-based alignment (output is nucleotide sequences, but alignment is c
 codon12: same as “codon” option but only 1st and 2nd nucleotides of a codon are selected. The 3rd position is usually of high variability.
 ''')
 @click.option('-t', type=int, help="number of process to be used (default=1)")
-@click.option('-t', type=int, help="""set a filtering cutoff for gap-containing positions from 0 to 100 (default: 50)
+@click.option('-filter', type=int, help="""set a filtering cutoff for gap-containing positions from 0 to 100 (default: 50)
 -- 0 to select all alignment positions
 -- 100 to select positions that are present in all genomes
 -- 50 to select positions that are present in a half of genomes
 """)
 @click.option('--prefix', help="a prefix is to appended to all output files to recognize each different run. If you don’t designate, one will be generated automatically.")
 @click.option('--gsi_threshold', type=int, help='Threshold for Gene Support Index (GSI). 95 means 95%. (default = 95)')
-#@click.option('--raxml', help='Use RAxML for phylogeny reconstruction (Default: FastTree). Be aware that RAxML is much slower than FastTree.')
-#@click.option('--zZ', help='Make zZ-formatted files. This additionally creates fasta/nwk files with zZ+uid+zZ format for the names of each genome')
+@click.option('--raxml', help='Use RAxML for phylogeny reconstruction (Default: FastTree). Be aware that RAxML is much slower than FastTree.')
+@click.option('--zZ', help='Make zZ-formatted files. This additionally creates fasta/nwk files with zZ+uid+zZ format for the names of each genome')
 def align(**kwargs):
     """
-    Generating multiple alignments from bcg files
-    """
+        Generating multiple alignments from bcg files
+        """
     app = Main(**kwargs)
     app.align()
 #pylint enable: line-too-long

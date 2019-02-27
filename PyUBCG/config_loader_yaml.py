@@ -20,16 +20,20 @@ class ConfigLoaderYaml(AbstractConfigLoader):
         :param args: Namespace with args from commandline
         :return: config object
         """
+        add_config = {}
         config = read_config_from_path(path)
         for key, value in args.items():
             #  we iterate over config from file to pass values from
             #  console call
-            for sub_dict in config:
-                for parametr in sub_dict:
-                    if parametr == key:
-                        sub_dict[parametr] = value
-                        continue
-            #  this for rest possible values that we have got from cli that
-            #  are not in config yet or not intended to be there like input_file
-            config[key] = value
-        return config
+            if value is not None:
+                for sub_dict in config:
+                    for parameter in config[sub_dict]:
+                        if parameter == key:
+                            config[sub_dict][parameter] = value
+                            continue
+            #  this for rest possible values that we have got from
+            #  cli that are not in config yet or not intended
+            #  to be there like input_file
+            add_config[key] = value
+        new_config = {**config, **add_config}
+        return new_config

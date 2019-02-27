@@ -33,19 +33,19 @@ class Prodigal(AbstractProdigal):
         self._translation_table = config['biological']['prodigal_translation_table']
 
 
-    def run(self, file_path: str, **kwargs) -> None:
+    def run(self, file_name: str, **kwargs) -> None:
         """
         Method to execute Prodigal program with input file. Save  protein
         translations file and nucleotide sequences file to progigal_output/
 
-        :param file_path: input file
+        :param file_name: input file
         :return:
         """
-        LOGGER.info('Process %s file with prodigal.', file_path)
+        LOGGER.info('Process %s file with prodigal.', file_name)
         process = subprocess.Popen(
-            ['prodigal', '-i', '%s/%s' % (self._input_path, file_path),
-             '-a', os.path.join(self._gene_pro_path, file_path),
-             '-d', os.path.join(self._gene_nuc_path, file_path),
+            ['prodigal', '-i', '%s/%s' % (self._input_path, file_name),
+             '-a', os.path.join(self._gene_pro_path, file_name),
+             '-d', os.path.join(self._gene_nuc_path, file_name),
              '-q'],
             stdout=subprocess.DEVNULL
         )

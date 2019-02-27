@@ -69,7 +69,7 @@ class AbstractUtilWrapper(abc.ABC):
         return tool
 
     @abc.abstractmethod
-    def run(self, file_path: str, **kwargs) -> None:
+    def run(self, file_name: str, **kwargs) -> None:
         """
         abstract method to be implemented in progeny classes
         :param path: path to some file
@@ -98,7 +98,7 @@ class AbstractHmmsearch(AbstractUtilWrapper):
             _impl = Hmmsearch
         return super(AbstractHmmsearch, cls).__new__(_impl)
 
-    def run(self, file_path: str, **kwargs):
+    def run(self, file_name: str, **kwargs):
         raise NotImplementedError
 
 
@@ -110,11 +110,33 @@ class AbstractProdigal(AbstractUtilWrapper):
     def __new__(cls, config):
         tool_type = config['tools']['prodigal_like_tool']
         if tool_type == 'prodigal':
-            # pylint: disable=cyclic-import
+            #pylint: disable=cyclic-import
             from PyUBCG.prodigal_wrapper import Prodigal
-            # pylint: enable=cyclic-import
+            #pylint: enable=cyclic-import
             _impl = Prodigal
         return super(AbstractProdigal, cls).__new__(_impl)
 
-    def run(self, file_path: str, **kwargs):
+    def run(self, file_name: str, **kwargs):
+        raise NotImplementedError
+
+
+class AbstractMafft(AbstractUtilWrapper):
+    """
+    Mafft wrapper class to create multiple sequence alignments
+    of amino acid or nucleotide sequences
+    """
+    def __new__(cls, config):
+        tool_type = config['tools']['mafft_like_tool']
+        if tool_type == 'mafft':
+            #pylint: disable=cyclic-import
+            from PyUBCG.mafft_wrapper import Mafft
+            #pylint: enable=cyclic-import
+            _impl = Mafft
+        else:
+            LOGGER.error('Incorrect mafft_like_tool in config')
+            raise Exception('Incorrect tool name for align step. '
+                            'Try to specify mafft program in config')
+        return super(AbstractMafft, cls).__new__(_impl)
+
+    def run(self, file_name: str, **kwargs):
         raise NotImplementedError

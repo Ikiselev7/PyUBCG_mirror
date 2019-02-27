@@ -8,6 +8,8 @@ paths:
   extract_output: extract_output
   prodigal_output: prodigal_output
   hmmsearch_output: hmmsearch_output
+  bcg_dir: extract_output
+  mafft_output: mafft_output
   align_output: align_output
 prefixes:
   nuc_prefix: gene_nuc
@@ -16,6 +18,7 @@ prefixes:
 tools:
   prodigal_like_tool: prodigal
   hmmsearch_like_tool: hmmsearch
+  mafft_like_tool: mafft
   align_tool: fasttree
 biological:
   prodigal_translation_table: 11

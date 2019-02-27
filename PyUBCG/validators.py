@@ -16,6 +16,8 @@ CONFIG_SCHEMA = tr.Dict({
             'extract_output': tr.String(),
             'prodigal_output': tr.String(),
             'hmmsearch_output': tr.String(),
+            'bcg_dir': tr.String(),
+            'mafft_output': tr.String(),
             'align_output': tr.String(allow_blank=True),
         }),
     tr.Key('prefixes'):
@@ -28,6 +30,7 @@ CONFIG_SCHEMA = tr.Dict({
         tr.Dict({
             'prodigal_like_tool': tr.String(),
             'hmmsearch_like_tool': tr.String(),
+            'mafft_like_tool': tr.String(),
             'align_tool': tr.String(),
         }),
     tr.Key('biological'):
