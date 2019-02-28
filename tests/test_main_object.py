@@ -13,9 +13,8 @@ def main_object():
 
 
 def test_config_load_in_main(main_object):
-    assert main_object._config.param1 == 'value'
-    assert main_object._config.project_name == 'PyUBCG'
-    assert main_object._config.input_folder == 'fasta_input/'
+    assert main_object._config['general']['project_name'] == 'PyUBCG'
+    assert main_object._config['paths']['fasta_input_folder'] == 'fasta_input'
 
 
 def test_prodigal_like_tool_presence(main_object):

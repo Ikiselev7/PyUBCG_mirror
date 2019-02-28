@@ -34,7 +34,6 @@ class MockedPopen:
             stdout = ''
             stderr = 'unknown command'
             self.returncode = 1
-
         return self.returncode
 
 

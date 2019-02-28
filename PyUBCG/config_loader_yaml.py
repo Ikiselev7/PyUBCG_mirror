@@ -4,12 +4,12 @@
 
 """
 
-import yaml
 #pylint: disable=cyclic-import
 from PyUBCG.abc import AbstractConfigLoader
+from PyUBCG.utils import read_config_from_path
 #pylint: enable=cyclic-import
 
-class AbstractConfigLoaderYaml(AbstractConfigLoader):
+class ConfigLoaderYaml(AbstractConfigLoader):
     """
     Class to load config object from .yaml file
     """
@@ -20,7 +20,16 @@ class AbstractConfigLoaderYaml(AbstractConfigLoader):
         :param args: Namespace with args from commandline
         :return: config object
         """
-        with open(path) as yaml_conf:
-            self.config = yaml.load(yaml_conf)
+        config = read_config_from_path(path)
         for key, value in args.items():
-            self.config[key] = value
+            #  we iterate over config from file to pass values from
+            #  console call
+            for sub_dict in config:
+                for parametr in sub_dict:
+                    if parametr == key:
+                        sub_dict[parametr] = value
+                        continue
+            #  this for rest possible values that we have got from cli that
+            #  are not in config yet or not intended to be there like input_file
+            config[key] = value
+        return config

@@ -33,7 +33,7 @@ setup(
         ],
     keywords='phylogenetic tree',
     packages=find_packages(),
-    install_requires=['Click==7.0', 'PyYAML==3.13', 'pylint', 'pytest'],
+    install_requires=['Click==7.0', 'trafaret-config==2.0.2','pylint', 'pytest'],
     extras_require={
             'dev': ['pytest', 'pylint'],
         },

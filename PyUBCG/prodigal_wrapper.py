@@ -21,16 +21,16 @@ class Prodigal(AbstractProdigal):
         self._config = config
         self._dirpath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-        self._input_path = os.path.join(*(self._dirpath, config.fasta_input_folder))
+        self._input_path = os.path.join(*(self._dirpath, config['paths']['fasta_input_folder']))
         self._gene_pro_path = os.path.join(*(self._dirpath,
-                                             config.prodigal_output,
-                                             config.pro_prefix
+                                             config['paths']['prodigal_output'],
+                                             config['prefixes']['pro_prefix']
                                              ))
         self._gene_nuc_path = os.path.join(*(self._dirpath,
-                                             config.prodigal_output,
-                                             config.nuc_prefix
+                                             config['paths']['prodigal_output'],
+                                             config['prefixes']['nuc_prefix']
                                              ))
-        self._translation_table = config.prodigal_translation_table
+        self._translation_table = config['biological']['prodigal_translation_table']
 
 
     def run(self, file_path: str, **kwargs) -> None:

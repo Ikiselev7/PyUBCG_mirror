@@ -1,4 +1,4 @@
 Click==7.0
-PyYAML==3.13
+trafaret-config==2.0.2
 pylint
 pytest

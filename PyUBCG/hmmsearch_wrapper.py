@@ -20,10 +20,12 @@ class Hmmsearch(AbstractHmmsearch):
     def __init__(self, config):
         self.config = config
         self._dirpath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        self._output_folder = os.path.join(self._dirpath, config.hmmsearch_output)
-        self._input_path = os.path.join(*(self._dirpath, config.prodigal_output,
-                                          config.pro_prefix))
-        self._hmm_base = config.hmm_base
+        self._output_folder = os.path.join(self._dirpath,
+                                           config['paths']['hmmsearch_output'])
+        self._input_path = os.path.join(*(self._dirpath,
+                                          config['paths']['prodigal_output'],
+                                          config['prefixes']['pro_prefix']))
+        self._hmm_base = config['biological']['hmm_base']
 
 
     def run(self, file_path: str, **kwargs) -> None:

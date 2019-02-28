@@ -27,7 +27,7 @@ class Main:
         LOGGER.info('Load config')
         self._dirpath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self._args = kwargs
-        self._config = AbstractConfigLoader(self._args)
+        self._config = AbstractConfigLoader(self._args).get_config()
         LOGGER.info('Create program structure')
         self._init_program_structure()
         LOGGER.info('Initialize Program wrappers')
@@ -36,21 +36,30 @@ class Main:
 
 
     def _init_program_structure(self):
-        prodigal_folder = os.path.join(self._dirpath, self._config.prodigal_output)
+        prodigal_folder = os.path.join(self._dirpath,
+                                       self._config['paths']['prodigal_output'])
         if not os.path.exists(prodigal_folder):
             os.makedirs(prodigal_folder)
-        prodigal_pro = os.path.join(prodigal_folder, self._config.pro_prefix)
-        prodigal_nuc = os.path.join(prodigal_folder, self._config.nuc_prefix)
+        prodigal_pro = os.path.join(prodigal_folder,
+                                    self._config['prefixes']['pro_prefix'])
+        prodigal_nuc = os.path.join(prodigal_folder,
+                                    self._config['prefixes']['nuc_prefix'])
         if not os.path.exists(prodigal_pro):
             os.makedirs(prodigal_pro)
         if not os.path.exists(prodigal_nuc):
             os.makedirs(prodigal_nuc)
-        hmm_output = os.path.join(self._dirpath, self._config.hmmsearch_output)
+        hmm_output = os.path.join(self._dirpath,
+                                  self._config['paths']['hmmsearch_output'])
         if not os.path.exists(hmm_output):
             os.makedirs(hmm_output)
-        output_folder = os.path.join(self._dirpath, self._config.output_folder)
-        if not os.path.exists(output_folder):
-            os.makedirs(output_folder)
+        extract_output = os.path.join(self._dirpath,
+                                      self._config['paths']['extract_output'])
+        if not os.path.exists(extract_output):
+            os.makedirs(extract_output)
+        align_output = os.path.join(self._dirpath,
+                                    self._config['paths']['extract_output'])
+        if not os.path.exists(align_output):
+            os.makedirs(align_output)
 
 
     def _process_hmm_output_to_json(self, file_path):
@@ -61,7 +70,7 @@ class Main:
         """
         data = {}
         features = self._load_features(file_path)
-        with open(os.path.join(*(self._dirpath, self._config.hmmsearch_output,
+        with open(os.path.join(*(self._dirpath, self._config['paths']['hmmsearch_output'],
                                  file_path+'.out'))) as hmm_output:
             while True:
                 line = hmm_output.readline()
@@ -81,26 +90,26 @@ class Main:
                         e_value = line[0]
                     index = int(line[8].split('_')[-1])
                     full_name = line[8]
-                    feature_pro = features[full_name][self._config.pro_prefix]
-                    feature_nuc = features[full_name][self._config.nuc_prefix]
+                    feature_pro = features[full_name][self._config['prefixes']['pro_prefix']]
+                    feature_nuc = features[full_name][self._config['prefixes']['nuc_prefix']]
                     # from UBCG code is not clear what for stand here 1
-                    if query in self._config.ubcg_gene:
+                    if query in self._config['biological']['ubcg_gene']:
                         data[query] = [1, [
                             index, feature_pro, feature_nuc, e_value
                         ]]
 
         bcg = [
             {'uid': str(time.time())},  # in UBCG could be specified as arg
-            {'label': self._config.label},
-            {'accession': self._config.acc},
-            {'taxon_name': self._config.taxon},
+            {'label': self._config['label']},
+            {'accession': self._config['accession']},
+            {'taxon_name': self._config['taxon']},
             {'ncbi_name': None},  # is hardcode in UBCG
-            {'strain_name': self._config.strain},
-            {'strain_type': self._config.type},
+            {'strain_name': self._config['strain']},
+            {'strain_type': self._config['type']},
             {'strain_property': None},  # is hardcode in UBCG
-            {'taxonomy': self._config.taxonomy},
+            {'taxonomy': self._config['taxonomy']},
             {'UBCG_target_gene_number|version': '92|v3.0'},  # is hardcode in UBCG
-            {'n_ubcg': len(set(self._config.ubcg_gene))},
+            {'n_ubcg': len(set(self._config['biological']['ubcg_gene']))},
             {'n_genes': len(data)},  # len of hmm result
             {'n_paralog_ubcg': None},  # UbcgDomain Integer getN_paralog_ubcg()
             {'data_structure': {
@@ -116,15 +125,18 @@ class Main:
             {'data': data},
         ]
 
-        with open(os.path.join(*(self._dirpath, self._config.output_folder,
+        with open(os.path.join(*(self._dirpath,
+                                 self._config['paths']['extract_output'],
                                  file_path.rsplit()[0]+'.bcg')), 'w') as bcg_file:
             json.dump(bcg, bcg_file)
 
     def _load_features(self, file_path):
-        features_folders = self._config.nuc_prefix, self._config.pro_prefix
+        features_folders = (self._config['prefixes']['nuc_prefix'],
+                            self._config['prefixes']['pro_prefix'])
         genes = {}
         for feature in features_folders:
-            with open(os.path.join(*(self._dirpath, self._config.prodigal_output,
+            with open(os.path.join(*(self._dirpath,
+                                     self._config['paths']['prodigal_output'],
                                      feature, file_path))) as feature_file:
                 data = feature_file.readlines()
                 for line in data:
@@ -144,56 +156,73 @@ class Main:
         :return:
         """
 
-    def bulk_run(self):
+    def multiple_extract(self):
         """
         method to process extract step on every files in input folder
         :return:
         """
-
-    def run(self):
-        """
-        Entry point to program
-        :return:
-        """
-        if self._config.command == 'extract':
-            self.extract()
-        if self._config.command == 'align':
-            self.align()
 
     def extract(self):
         """
         Main method to perform all work
         :return:
         """
-        file_path = self._config.input_file
+        file_path = self._config['input_file']
         self._prodigal.run(file_path)
         self._hmmsearch.run(file_path)
         self._process_hmm_output_to_json(file_path)
 
 
 #pylint disable: line-too-long
-@click.command()
-@click.argument('command', nargs=1)
+@click.group(help='PyUBCG - python implementation of UBCG pipeline https://www.ezbiocloud.net/tools/ubcg')
+def cli():
+    """entry point"""
+
+@cli.command()
 @click.option('-i', '--input_file', required=True, help='Path to fasta file to be extracted')
 @click.option('-c', '--config', required=False, default='config/config.yaml',
               help='Specify path to your config if it is not default ')
 @click.option('-l', '--label', default=None,
               help='full label of the strain/genome. '
                    'It should be encompassed by single quotes (e.g. --label “Escherichia coli O157 876”).')
-@click.option('-a', '--acc', default=None, help='accession of a genome sequence. '
-                                                'Usually, NCBI’s assembly accession is used for public domain data.')
+@click.option('-a', '--accession', default=None, help='accession of a genome sequence. '
+                                                      'Usually, NCBI’s assembly accession is used for public domain data.')
 @click.option('-t', '--taxon', default=None, help='name of species (e.g. --taxon “Escherichia coli”)')
 @click.option('-tax', '--taxonomy', default=None, help='Taxonomy')
 @click.option('-s', '--strain', default=None, help='name of the strain (e.g. --strain “JC 126”)')
 @click.option('--type', default=False, is_flag=True,
               help='add this flag if a strain is the type strain of species or subspecies (e.g. --type)')
-def cli(**kwargs):
+def extract(**kwargs):
     """
-    PyUBCG is python implementation of UBCG pipeline https://www.ezbiocloud.net/tools/ubcg \n
-    COMMAND: extract|align
+    Converting genome assemblies or contigs (fasta) to bcg files
     """
     app = Main(**kwargs)
-    app.run()
+    app.extract()
+
+@cli.command()
+@click.option('-bcg_dir', required=True, help="directory for bcg files that you want to include in the alignment.")
+@click.option('-out_dir', help='directory where all output files will be')
+@click.option('-a', type=click.Choice(['nt', 'aa', 'codon', 'codon12']), help='''nt: nucleotide sequence alignment
+aa: amino acid sequence alignment
+codon: codon-based alignment (output is nucleotide sequences, but alignment is carried out using amino acid sequences) DEFAULT.
+codon12: same as “codon” option but only 1st and 2nd nucleotides of a codon are selected. The 3rd position is usually of high variability.
+''')
+@click.option('-t', type=int, help="number of process to be used (default=1)")
+@click.option('-t', type=int, help="""set a filtering cutoff for gap-containing positions from 0 to 100 (default: 50)
+-- 0 to select all alignment positions
+-- 100 to select positions that are present in all genomes
+-- 50 to select positions that are present in a half of genomes
+""")
+@click.option('--prefix', help="a prefix is to appended to all output files to recognize each different run. If you don’t designate, one will be generated automatically.")
+@click.option('--gsi_threshold', type=int, help='Threshold for Gene Support Index (GSI). 95 means 95%. (default = 95)')
+#@click.option('--raxml', help='Use RAxML for phylogeny reconstruction (Default: FastTree). Be aware that RAxML is much slower than FastTree.')
+#@click.option('--zZ', help='Make zZ-formatted files. This additionally creates fasta/nwk files with zZ+uid+zZ format for the names of each genome')
+def align(**kwargs):
+    """
+    Generating multiple alignments from bcg files
+    """
+    app = Main(**kwargs)
+    app.align()
 #pylint enable: line-too-long
 
 

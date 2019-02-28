@@ -26,13 +26,13 @@ class AbstractConfigLoader(abc.ABC):
                 'Config format is not supported. Use one of: {}'.format(
                     ', '.join(SUPPORTED_CONFIG_FORMATS)))
         if config_format == 'yaml':
-            from PyUBCG.config_loader_yaml import AbstractConfigLoaderYaml
-            _conf = AbstractConfigLoaderYaml
+            from PyUBCG.config_loader_yaml import ConfigLoaderYaml
+            _conf = ConfigLoaderYaml
         return super().__new__(_conf)
 
     def __init__(self, args):
         path = args['config']
-        self.load_config(path, args)
+        self.config = self.load_config(path, args)
 
     @abc.abstractmethod
     def load_config(self, path, args):
@@ -43,12 +43,10 @@ class AbstractConfigLoader(abc.ABC):
         :param args:
         :return:
         """
-    def __getattr__(self, item: str):
-        if item not in self.config:
-            LOGGER.error('Value %s not in config', item)
-            return None
-        return self.config[item]
 
+    def get_config(self):
+        """return config dict"""
+        return self.config
 
 class AbstractUtilWrapper(abc.ABC):
 
@@ -94,7 +92,7 @@ class AbstractHmmsearch(AbstractUtilWrapper):
     """
 
     def __new__(cls, config):
-        tool_type = config.hmmsearch_like_tool
+        tool_type = config['tools']['hmmsearch_like_tool']
         if tool_type == 'hmmsearch':
             from PyUBCG.hmmsearch_wrapper import Hmmsearch
             _impl = Hmmsearch
@@ -110,7 +108,7 @@ class AbstractProdigal(AbstractUtilWrapper):
     """
 
     def __new__(cls, config):
-        tool_type = config.prodigal_like_tool
+        tool_type = config['tools']['prodigal_like_tool']
         if tool_type == 'prodigal':
             # pylint: disable=cyclic-import
             from PyUBCG.prodigal_wrapper import Prodigal
