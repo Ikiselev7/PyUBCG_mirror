@@ -27,7 +27,7 @@ class Hmmsearch(AbstractHmmsearch):
                                           config['prefixes']['pro_prefix']))
         self._hmm_base = config['biological']['hmm_base']
 
-    def run(self, file_name: str, **kwargs) -> None:
+    def run(self, file_name: str, *args, **kwargs) -> None:
         """
         Method to execute hmmsearch
         :param file_name: some file here

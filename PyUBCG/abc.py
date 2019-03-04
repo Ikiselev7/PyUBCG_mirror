@@ -69,7 +69,7 @@ class AbstractUtilWrapper(abc.ABC):
         return tool
 
     @abc.abstractmethod
-    def run(self, file_name: str, **kwargs) -> None:
+    def run(self, file_name: str, *args, **kwargs) -> None:
         """
         abstract method to be implemented in progeny classes
         :param path: path to some file
@@ -98,7 +98,7 @@ class AbstractHmmsearch(AbstractUtilWrapper):
             _impl = Hmmsearch
         return super(AbstractHmmsearch, cls).__new__(_impl)
 
-    def run(self, file_name: str, **kwargs):
+    def run(self, file_name: str, *args, **kwargs):
         raise NotImplementedError
 
 
@@ -116,7 +116,7 @@ class AbstractProdigal(AbstractUtilWrapper):
             _impl = Prodigal
         return super(AbstractProdigal, cls).__new__(_impl)
 
-    def run(self, file_name: str, **kwargs):
+    def run(self, file_name: str, *args, **kwargs):
         raise NotImplementedError
 
 
@@ -138,5 +138,5 @@ class AbstractMafft(AbstractUtilWrapper):
                             'Try to specify mafft program in config')
         return super(AbstractMafft, cls).__new__(_impl)
 
-    def run(self, file_name: str, **kwargs):
+    def run(self, file_name: str, *args, **kwargs):
         raise NotImplementedError

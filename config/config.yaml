@@ -7,14 +7,32 @@ paths:
   fasta_input_folder: fasta_input
   extract_output: extract_output
   prodigal_output: prodigal_output
+  prodigal_nuc: prodigal_output/gene_nuc
+  prodigal_pro: prodigal_output/gene_pro
   hmmsearch_output: hmmsearch_output
   bcg_dir: extract_output
-  mafft_output: mafft_output
+  align_mafft_output: mafft_output
   align_output: align_output
+  align_input_merge: align_input_merge
+  align_input_parse: align_input_parse
+  align_filtering_output: align_filtering_output
+  align_align_output: align_align_output
+  align_alignment_output: align_alignment_output
 prefixes:
-  nuc_prefix: gene_nuc
   pro_prefix: gene_pro
+  nuc_prefix: gene_nuc
+  nuc_input: align_nuc
+  pro_input: align_pro
   align_prefix: ''
+postfixes:
+  nuc_input_const: .nucleotide.input
+  pro_input_const: .protein.input
+  input_parsing_dna_const: .dna.fasta
+  input_parsing_pro_const: .protein.fasta
+  mafft_res_pro_const: .protein.zZ.fasta
+  mafft_res_dna_const: .dna.zZ.fasta
+  align_align_const: .zZ.fasta
+  align_concateneted: 'concatenating_output.fasta'
 tools:
   prodigal_like_tool: prodigal
   hmmsearch_like_tool: hmmsearch
@@ -24,5 +42,4 @@ biological:
   prodigal_translation_table: 11
   ubcg_gene: ["alaS", "argS", "aspS", "cgtA", "coaE", "cysS", "dnaA", "dnaG", "dnaX", "engA", "ffh", "fmt", "frr", "ftsY", "gmk", "hisS", "ileS", "infB", "infC", "ksgA", "lepA", "leuS", "ligA", "nusA", "nusG", "pgk", "pheS", "pheT", "prfA", "pyrG", "recA", "rbfA", "rnc", "rplA", "rplB", "rplC", "rplD", "rplE", "rplF", "rplI", "rplJ", "rplK", "rplL", "rplM", "rplN", "rplO", "rplP", "rplQ", "rplR", "rplS", "rplT", "rplU", "rplV", "rplW", "rplX", "rpmA", "rpmC", "rpmI", "rpoA", "rpoB", "rpoC", "rpsB", "rpsC", "rpsD", "rpsE", "rpsF", "rpsG", "rpsH", "rpsI", "rpsJ", "rpsK", "rpsL", "rpsM", "rpsO", "rpsP", "rpsQ", "rpsR", "rpsS", "rpsT", "secA", "secG", "secY", "serS", "smpB", "tig", "tilS", "truB", "tsaD", "tsf", "uvrB", "ybeY", "ychF" ]
   hmm_base: UBCG.hmm
-  
 

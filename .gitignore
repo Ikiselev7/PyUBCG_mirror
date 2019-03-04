@@ -118,3 +118,5 @@ fasta_input/
 hmmsearch_output/
 prodigal_output/
 mafft_output/
+ubcg_output/
+UBCG/

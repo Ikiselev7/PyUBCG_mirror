@@ -33,7 +33,7 @@ class Prodigal(AbstractProdigal):
         self._translation_table = config['biological']['prodigal_translation_table']
 
 
-    def run(self, file_name: str, **kwargs) -> None:
+    def run(self, file_name: str, *args, **kwargs) -> None:
         """
         Method to execute Prodigal program with input file. Save  protein
         translations file and nucleotide sequences file to progigal_output/

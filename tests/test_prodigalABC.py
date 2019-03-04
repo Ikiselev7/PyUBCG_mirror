@@ -10,7 +10,7 @@ from PyUBCG.app import Main
 @pytest.fixture
 def prodigal_object():
     with mock.patch('shutil.which', return_value=True):
-        return Main(config='tests/config/files/test_config.yaml')._prodigal
+        return Main(config='tests/config/files/test_config.yaml', command='extract')._prodigal
 
 
 class MockedPopen:

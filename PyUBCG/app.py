@@ -7,12 +7,15 @@
 import json
 import time
 import os
+import sys
+import shutil
 # import logging
 import logging.config
 import click
 
 from PyUBCG.abc import AbstractProdigal, AbstractHmmsearch, \
     AbstractConfigLoader, AbstractMafft
+from PyUBCG.aligner import Aligner
 
 logging.config.fileConfig('config/logging.conf')
 LOGGER = logging.getLogger('PyUBCG')
@@ -22,38 +25,46 @@ class Main:
     """
     Main class to process extraction step. Equal to UBCG extract
     """
-    def __init__(self, **kwargs):
+    def __init__(self, command, **kwargs):
         # pylint: disable=E0110
         LOGGER.info('Initialize Main object')
         LOGGER.info('Load config')
-        self._dirpath = \
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self._dirpath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self._args = kwargs
         self._config = AbstractConfigLoader(self._args).get_config()
+        self._config['command'] = command
         LOGGER.info('Create program structure')
         self._init_program_structure()
+        if command == 'align':
+            self._flush_prefix_folders()
         LOGGER.info('Initialize Program wrappers')
         self._prodigal = AbstractProdigal(self._config)
         self._hmmsearch = AbstractHmmsearch(self._config)
-        self._mafft = AbstractMafft(self._config)
+        if command == 'align':
+            self._mafft = AbstractMafft(self._config)
+            self._aligner = Aligner(self._config)
+            self._replace_map = {}
+
+
+    def _flush_prefix_folders(self):
+        if self._config.rewrite:
+            for folder in self._config['paths']:
+                prefix_folder = os.path.join(self._dirpath,
+                                             folder,
+                                             self._config.align_prefix)
+                if os.path.exists(prefix_folder):
+                    shutil.rmtree(prefix_folder)
+
 
     def _init_program_structure(self):
-        for name_dir, path in self._config['paths'].items():
-            if 'output' in path:
-                folder_path = os.path.join(self._dirpath, path)
-                if not os.path.exists(folder_path):
-                    os.makedirs(folder_path)
-                if name_dir == 'prodigal_output':
-                    prodigal_pro = os.path.join(folder_path,
-                                                self._config['prefixes'][
-                                                    'pro_prefix'])
-                    prodigal_nuc = os.path.join(folder_path,
-                                                self._config['prefixes'][
-                                                    'nuc_prefix'])
-                    if not os.path.exists(prodigal_pro):
-                        os.makedirs(prodigal_pro)
-                    if not os.path.exists(prodigal_nuc):
-                        os.makedirs(prodigal_nuc)
+        for folder in self._config['paths']:
+            if self._config.command == 'extract' and folder.startswith('align'):
+                continue
+            path = os.path.join(self._dirpath,
+                                self._config['paths'][folder])
+            if not os.path.exists(path):
+                os.makedirs(path)
+
 
     def _process_hmm_output_to_json(self, file_path):
         """
@@ -63,8 +74,8 @@ class Main:
         """
         data = {}
         features = self._load_features(file_path)
-        with open(os.path.join(*(self._dirpath, self._config['paths']['hmmsearch_output'],
-                                 file_path+'.out'))) as hmm_output:
+        with open(os.path.join(self._dirpath, self._config['paths']['hmmsearch_output'],
+                               file_path+'.out')) as hmm_output:
             while True:
                 line = hmm_output.readline()
                 if not line:
@@ -88,7 +99,7 @@ class Main:
                     # from UBCG code is not clear what for stand here 1
                     if query in self._config['biological']['ubcg_gene']:
                         data[query] = [1, [
-                            index, feature_pro, feature_nuc, e_value
+                            index, feature_nuc, feature_pro, e_value
                         ]]
 
         bcg = [
@@ -123,9 +134,10 @@ class Main:
                                  file_path.rsplit()[0]+'.bcg')), 'w') as bcg_file:
             json.dump(bcg, bcg_file)
 
+
     def _load_features(self, file_path):
-        features_folders = (self._config['prefixes']['nuc_prefix'],
-                            self._config['prefixes']['pro_prefix'])
+        features_folders = (self._config['prefixes']['pro_prefix'],
+                            self._config['prefixes']['nuc_prefix'])
         genes = {}
         for feature in features_folders:
             with open(os.path.join(*(self._dirpath,
@@ -134,13 +146,13 @@ class Main:
                 data = feature_file.readlines()
                 for line in data:
                     if line.startswith('>'):
-                        chunk = line.split()[0][1:]
-                        if chunk not in genes:
-                            genes[chunk] = {features_folders[0]: '', features_folders[1]: ''}
+                        gene = line.split()[0][1:]
+                        if gene not in genes:
+                            genes[gene] = {features_folders[0]: '', features_folders[1]: ''}
                     else:
                         if '*' in line:
                             line = line.replace('*', '')
-                        genes[chunk][feature] = genes[chunk].get(feature, '') + line.strip()
+                        genes[gene][feature] = genes[gene].get(feature, '') + line.strip()
         return genes
 
     def align(self):
@@ -148,8 +160,16 @@ class Main:
         Align step
         :return:
         """
-        file_path = 'test.fasta'
-        self._mafft.run(file_path)
+        if os.path.exists(os.path.join(self._dirpath,
+                                       self._config.paths.align_alignment_output,
+                                       self._config.align_prefix)):
+            sys.stderr.write(f'Given prefix {self._config.align_prefix} alredy exist. '
+                             f'Use another one or add -R flag to rewrite existing files.\n\t'
+                             f'WARNING! All existing files will be deleted.\n')
+            sys.exit(1)
+        self._replace_map = self._aligner.run()
+
+
 
     def multiple_extract(self):
         """
@@ -185,48 +205,53 @@ def cli():
 @click.option('-t', '--taxon', default=None, help='name of species (e.g. --taxon “Escherichia coli”)')
 @click.option('-tax', '--taxonomy', default=None, help='Taxonomy')
 @click.option('-s', '--strain', default=None, help='name of the strain (e.g. --strain “JC 126”)')
-# @click.option('--type', default=None, help='add this flag if a strain is the type strain of species or subspecies (e.g. --type)')
+@click.option('--type', default=None, help='add this flag if a strain is the type strain of species or subspecies (e.g. --type)')
 @click.option('--type', default=False, is_flag=True,
               help='add this flag if a strain is the type strain of species or subspecies (e.g. --type)')
 def extract(**kwargs):
     """
     Converting genome assemblies or contigs (fasta) to bcg files
     """
-    app = Main(**kwargs)
+    app = Main(**kwargs, command='extract')
     app.extract()
 
 
 @cli.command()
-@click.option('-bcg_dir', required=True, help="directory for bcg files that you want to include in the alignment.")
+@click.option('--bcg_dir', default='extract_output', help="directory for bcg files that you want to include in the alignment.")
 @click.option('-c', '--config', required=False, default='config/config.yaml',
               help='Specify path to your config if it is not default ')
-@click.option('-out_dir', help='directory where all output files will be')
-@click.option('-a', type=click.Choice(['nt', 'aa', 'codon', 'codon12']), help='''nt: nucleotide sequence alignment
+@click.option('--out_dir', default='align_output', help='directory where all output files will be')
+@click.option('-a', '--align_mode', type=click.Choice(['nt', 'aa', 'codon', 'codon12']), default='codon',
+              help='''nt: nucleotide sequence alignment
 aa: amino acid sequence alignment
 codon: codon-based alignment (output is nucleotide sequences, but alignment is carried out using amino acid sequences) DEFAULT.
 codon12: same as “codon” option but only 1st and 2nd nucleotides of a codon are selected. The 3rd position is usually of high variability.
 ''')
 @click.option('-t', type=int, help="number of process to be used (default=1)")
-@click.option('-filter', type=int, help="""set a filtering cutoff for gap-containing positions from 0 to 100 (default: 50)
+@click.option('-f', '--filter', type=click.IntRange(min=0, max=100),
+              default=50, help="""set a filtering cutoff for gap-containing positions from 0 to 100 (default: 50)
 -- 0 to select all alignment positions
 -- 100 to select positions that are present in all genomes
 -- 50 to select positions that are present in a half of genomes
 """)
-@click.option('--prefix', help="a prefix is to appended to all output files to recognize each different run. If you don’t designate, one will be generated automatically.")
-@click.option('--gsi_threshold', type=int, help='Threshold for Gene Support Index (GSI). 95 means 95%. (default = 95)')
-@click.option('--raxml', help='Use RAxML for phylogeny reconstruction (Default: FastTree). Be aware that RAxML is much slower than FastTree.')
-@click.option('--zZ', help='Make zZ-formatted files. This additionally creates fasta/nwk files with zZ+uid+zZ format for the names of each genome')
+@click.option('--align_prefix', help="a prefix is to appended to all output files to recognize each different run. If you don’t designate, one will be generated automatically.")
+@click.option('--gsi_threshold', type=click.IntRange(min=0, max=100),
+              default=95, help='Threshold for Gene Support Index (GSI). 95 means 95%. (default = 95)')
+@click.option('-R', '--rewrite', default=False, is_flag=True,
+              help='add this flag if you want to rewrite existing files after previous run.')
+#@click.option('--raxml', help='Use RAxML for phylogeny reconstruction (Default: FastTree). Be aware that RAxML is much slower than FastTree.')
+#@click.option('--zZ', help='Make zZ-formatted files. This additionally creates fasta/nwk files with zZ+uid+zZ format for the names of each genome')
 def align(**kwargs):
     """
         Generating multiple alignments from bcg files
         """
-    app = Main(**kwargs)
+
+    app = Main(**kwargs, command='align')
     app.align()
 #pylint enable: line-too-long
 
 
 if __name__ == '__main__':
     cli()
-
     # APP._process_hmm_output_to_json('CP012646_s_GCA_001281025.1_KCOM_1350.fasta')
     # app.run()
