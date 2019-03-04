@@ -6,7 +6,7 @@
 
 #pylint: disable=cyclic-import
 from PyUBCG.abc import AbstractConfigLoader
-from PyUBCG.utils import read_config_from_path
+from PyUBCG.utils import read_config_from_path, AttrDict
 #pylint: enable=cyclic-import
 
 class ConfigLoaderYaml(AbstractConfigLoader):
@@ -31,9 +31,6 @@ class ConfigLoaderYaml(AbstractConfigLoader):
                         if parameter == key:
                             config[sub_dict][parameter] = value
                             continue
-            #  this for rest possible values that we have got from
-            #  cli that are not in config yet or not intended
-            #  to be there like input_file
             add_config[key] = value
         new_config = {**config, **add_config}
-        return new_config
+        return AttrDict.from_nested_dict(new_config)
