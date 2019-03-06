@@ -16,6 +16,7 @@ from PyUBCG.abc import AbstractMafft
 
 LOGGER = logging.getLogger('PyUBCG.aligner')
 
+
 class Aligner:
     """
         Class to process multiple gene alignment with filtering
@@ -70,11 +71,6 @@ class Aligner:
             self.config.paths.align_align_output,
             self.config.prefixes.align_prefix
         )
-        self._align_alignment_output = self._create_folder_if_not_exist(
-            self.config.paths.align_alignment_output,
-            self.config.prefixes.align_prefix
-        )
-
 
         replace_map = self._input_merge()
         self._input_parsing()
@@ -278,7 +274,7 @@ class Aligner:
         for gene in self._bcg_filtered_in_align:
             file_name = os.path.join(self._align_filtering_output_with_prefix,
                                      gene+self.config.postfixes.align_align_const)
-            fasta_seq_list = FastaSeqList(file_name) # var11
+            fasta_seq_list = FastaSeqList(file_name)
             if not all(len(fasta.seq) == fasta_seq_list.get_seq_len()
                        for fasta in fasta_seq_list.get_seq_list()):
                 error = f'{file_name} has different sequence length.'
@@ -287,9 +283,7 @@ class Aligner:
             gene_length_map[gene] = fasta_seq_list.get_seq_len()
             gene_fasta_seq_list_map[gene] = fasta_seq_list
 
-        # TODO check is bcg_list same as genomeList
-
-        for seq_name in self._genome_name: # var19
+        for seq_name in self._genome_name:
             if concatenated_fasta:
                 concatenated_fasta.append("\n>" + seq_name + "\n")
             else:
@@ -302,8 +296,8 @@ class Aligner:
                     concatenated_fasta.append(
                         gene_fasta_seq_list_map[fasta_list].seq_list[seq_name].seq)
         output_file = os.path.join(
-            self._align_alignment_output,
-            self.config.align_mode + '_' + self.config.postfixes.align_concateneted)
+            self._align_filtering_output_with_prefix,
+            'UBCG' + self.config.postfixes.align_align_const)
         with open(output_file, 'w') as f:
             f.write(''.join(concatenated_fasta))
 

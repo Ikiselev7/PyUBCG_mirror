@@ -120,3 +120,4 @@ prodigal_output/
 mafft_output/
 ubcg_output/
 UBCG/
+align_*/

@@ -40,7 +40,7 @@ class FastaSeqList:
         temp_title = ''
         with open(self.file_name) as fasta_file:
             # file = fasta_file.readlines()
-            print(self.file_name)
+            # print(self.file_name)
             # pprint(file)
             # sys.exit()
             for line in fasta_file:

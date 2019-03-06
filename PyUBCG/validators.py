@@ -25,7 +25,7 @@ CONFIG_SCHEMA = tr.Dict({
             'align_input_parse': tr.String(),
             'align_filtering_output': tr.String(),
             'align_align_output': tr.String(),
-            'align_alignment_output': tr.String(),
+            'align_trees_output': tr.String(),
         }),
     tr.Key('prefixes'):
         tr.Dict({
@@ -37,6 +37,7 @@ CONFIG_SCHEMA = tr.Dict({
         }),
     tr.Key('postfixes'):
         tr.Dict({
+            'align_flag': tr.String(),
             'nuc_input_const': tr.String(),
             'pro_input_const': tr.String(),
             'input_parsing_dna_const': tr.String(),
@@ -44,7 +45,7 @@ CONFIG_SCHEMA = tr.Dict({
             'mafft_res_pro_const': tr.String(),
             'mafft_res_dna_const': tr.String(),
             'align_align_const': tr.String(),
-            'align_concateneted': tr.String(),
+            'align_tree_const': tr.String(),
         }),
     tr.Key('tools'):
         tr.Dict({
