@@ -37,6 +37,7 @@ CONFIG_SCHEMA = tr.Dict({
         }),
     tr.Key('postfixes'):
         tr.Dict({
+            'align_flag': tr.String(),
             'nuc_input_const': tr.String(),
             'pro_input_const': tr.String(),
             'input_parsing_dna_const': tr.String(),
@@ -60,3 +61,6 @@ CONFIG_SCHEMA = tr.Dict({
             'hmm_base': tr.String(),
         }),
 })
+
+
+

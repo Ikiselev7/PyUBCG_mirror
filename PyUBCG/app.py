@@ -255,3 +255,5 @@ if __name__ == '__main__':
     cli()
     # APP._process_hmm_output_to_json('CP012646_s_GCA_001281025.1_KCOM_1350.fasta')
     # app.run()
+
+

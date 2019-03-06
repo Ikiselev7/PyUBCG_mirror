@@ -65,3 +65,4 @@ class Mafft(AbstractMafft):
             raise ValueError(f'Invalid args for mafft,\n\t{err}')
         proc.wait()
         return output_file, gene_name
+

@@ -15,3 +15,5 @@ class FastaSeq:
         #  what fore here it is not clear from origin
         self.number_added_aeq = number_added_seq
         self.acc = ''
+
+

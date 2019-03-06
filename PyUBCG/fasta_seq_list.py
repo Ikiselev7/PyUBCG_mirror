@@ -105,3 +105,5 @@ class FastaSeqList:
 
     def __getattr__(self, item):
         return self.seq_list[item]
+
+
