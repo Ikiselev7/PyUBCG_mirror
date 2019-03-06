@@ -95,7 +95,7 @@ class Main:
                     # from UBCG code is not clear what for stand here 1
                     if query in self._config['biological']['ubcg_gene']:
                         data[query] = [1, [
-                            index, feature_pro, feature_nuc, e_value
+                            index, feature_nuc, feature_pro, e_value
                         ]]
 
         bcg = [
