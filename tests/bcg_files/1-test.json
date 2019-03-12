@@ -1,36 +1,34 @@
-[{
-    "uid": "1550089557386"
-}, {
-    "label": "CP012646_s KCOM 1350"
-}, {
-    "accession": "GCA_001281025.1"
-}, {
-    "taxon_name": "CP012646_s"
-}, {
-    "ncbi_name": null
-}, {
-    "strain_name": "KCOM 1350"
-}, {
-    "strain_type": null
-}, {
-    "strain_property": null
-}, {
-    "taxonomy": null
-}, {
-    "UBCG_target_gene_number|version": "92|v3.0"
-}, {
-    "n_ubcg": 92
-}, {
-    "n_genes": 92
-}, {
-    "n_paralog_ubcg": 0
-}, {
+{
+    "uid": "1550089557386",
+    "label": "CP012646_s KCOM 1350",
+    "accession": "GCA_001281025.1",
+    "taxon_name": "CP012646_s",
+    "ncbi_name": null,
+    "strain_name": "KCOM 1350",
+    "strain_type": null,
+    "strain_property": null,
+    "taxonomy": null,
+    "n_ubcg": 92,
+    "n_genes": 92,
+    "n_paralog_ubcg": 0,
     "data_structure": {
-        "gene_name": ["n_genes", ["feature_index", "dna", "protein", "evalue"]]
-    }
-}, {
+        "gene_name": [
+            "n_genes",
+            [
+                "feature_index",
+                "nuc_sequence",
+                "pro_sequence",
+                "e_value"
+            ]
+        ]
+    },
     "data": {
-        "rpmC": [0],
-        "recA": [0]
-    }
-}]
+        "rpmC": [
+            0
+        ],
+        "recA": [
+            0
+        ]
+    },
+    "UBCG_target_gene_number|version": "92|v3.0"
+}

@@ -17,21 +17,14 @@ class BcgDtoEncoder(json.JSONEncoder):
         if isinstance(o, BcgGenData):
             if o.n_genes == 0:
                 return [0]
-            res = [o.n_genes]
-            data_struct = _BcgGenDataStruct()
-            for r in o.genes:
-                res.append([r[key] for key in data_struct.genes])
-            return res
+            return [o.n_genes, o.genes]
         if isinstance(o, _BcgGenDataWrapper):
-            d = {}
-            for val in o.genes_list:
-                d[val.name] = val
-            return d
+            return o.genes_list
         if isinstance(o, BcgDto):
             res_dict = _join_target_gene_number_with_version(o)
-            result = []
+            result = {}
             for attr, value in res_dict.items():
-                result.append({attr: value})
+                result[attr] = value
             return result
 
         return json.JSONEncoder.default(self, o)
@@ -44,7 +37,7 @@ class BcgDto():  # pylint: disable=R0902
     def __init__(self, uid, label, accession,  # pylint: disable=R0913, R0914,
                  taxon_name, ncbi_name, strain_name, strain_type,
                  strain_property, taxonomy, UBCG_target_gene_number, version,
-                 n_ubcg, n_genes, n_paralog_ubcg, *args):
+                 n_ubcg, n_genes, n_paralog_ubcg, data):
         self.uid = uid
         self.label = label
         self.accession = accession
@@ -60,7 +53,7 @@ class BcgDto():  # pylint: disable=R0902
         self.n_genes = n_genes
         self.n_paralog_ubcg = n_paralog_ubcg
         self.data_structure = _BcgGenDataStruct()
-        self.data = _BcgGenDataWrapper(args)
+        self.data = _BcgGenDataWrapper(data)
 
 
 class _BcgGenDataStruct:
@@ -70,17 +63,23 @@ class _BcgGenDataStruct:
     def __init__(self):
         self.name = "gene_name"
         self.n_genes = "n_genes"
-        self.genes = ["feature_index", "dna", "protein", "evalue"]
+        self.genes = ["feature_index", "nuc_sequence", "pro_sequence", "e_value"]
 
 
 class BcgGenData:
     """
     Class to store gene data from bcg json file
     """
-    def __init__(self, name, n_genes, *args):
+    def __init__(self, name, n_genes, index=None, dna=None, protein=None, # pylint: disable=R0913, R0914
+                 evalue=None):
         self.name = name
         self.n_genes = n_genes
-        self.genes = list(args)
+        self.genes = {
+            'feature_index': index,
+            'nuc_sequence': dna,
+            'pro_sequence': protein,
+            'e_value': evalue
+        }
 
 
 class _BcgGenDataWrapper:
@@ -88,12 +87,7 @@ class _BcgGenDataWrapper:
     Class-wrapper for BcgGenDataStruct and BcgGenData classes
     """
     def __init__(self, args):
-        try:
-            # try to cast to list (if tuple)
-            self.genes_list = list(args)
-        except TypeError:
-            # define new list
-            self.genes_list = [args]
+        self.genes_list = {gene.name: gene for gene in args}
 
 
 def _join_target_gene_number_with_version(bcg_dto):
@@ -102,5 +96,4 @@ def _join_target_gene_number_with_version(bcg_dto):
     values = [bcg_dto_dict.pop(attr) for attr in attrs]
     bcg_dto_dict['{}|{}'.format(
         attrs[0], attrs[1])] = '{}|{}'.format(values[0], values[1])
-
     return bcg_dto_dict

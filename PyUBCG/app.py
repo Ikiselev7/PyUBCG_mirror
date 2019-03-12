@@ -16,6 +16,7 @@ import click
 from PyUBCG.abc import AbstractProdigal, AbstractHmmsearch, \
     AbstractConfigLoader, AbstractMafft
 from PyUBCG.aligner import Aligner
+from PyUBCG.bcg_dto import BcgDto, BcgGenData, BcgDtoEncoder
 
 logging.config.fileConfig('config/logging.conf')
 LOGGER = logging.getLogger('PyUBCG')
@@ -72,7 +73,7 @@ class Main:
         currently this method copy UBCG processing of hmmsearch output
         :return:
         """
-        data = {}
+        data = []
         features = self._load_features(file_path)
         with open(os.path.join(self._dirpath, self._config['paths']['hmmsearch_output'],
                                file_path+'.out')) as hmm_output:
@@ -81,7 +82,7 @@ class Main:
                 if not line:
                     break
                 if line.strip().startswith('Query:'):
-                    query = line.split()[1]
+                    gene = line.split()[1]
                 if all(i in line.split() for i in ['E-value', 'score', 'bias', 'E-value', 'score']):
                     hmm_output.readline()
 
@@ -96,43 +97,42 @@ class Main:
                     full_name = line[8]
                     feature_pro = features[full_name][self._config['prefixes']['pro_prefix']]
                     feature_nuc = features[full_name][self._config['prefixes']['nuc_prefix']]
-                    # from UBCG code is not clear what for stand here 1
-                    if query in self._config['biological']['ubcg_gene']:
-                        data[query] = [1, [
-                            index, feature_nuc, feature_pro, e_value
-                        ]]
+                    # 1 here in origin to determine later if gene contains
+                    # in genome
+                    if gene in self._config['biological']['ubcg_gene']:
+                        data.append(BcgGenData(
+                            name=gene,
+                            n_genes=1,
+                            index=index,
+                            dna=feature_nuc,
+                            protein=feature_pro,
+                            evalue=e_value,
+                        ))
 
-        bcg = [
-            {'uid': str(time.time())},  # in UBCG could be specified as arg
-            {'label': self._config['label']},
-            {'accession': self._config['accession']},
-            {'taxon_name': self._config['taxon']},
-            {'ncbi_name': None},  # is hardcode in UBCG
-            {'strain_name': self._config['strain']},
-            {'strain_type': self._config['type']},
-            {'strain_property': None},  # is hardcode in UBCG
-            {'taxonomy': self._config['taxonomy']},
-            {'UBCG_target_gene_number|version': '92|v3.0'},  # is hardcode in UBCG
-            {'n_ubcg': len(set(self._config['biological']['ubcg_gene']))},
-            {'n_genes': len(data)},  # len of hmm result
-            {'n_paralog_ubcg': None},  # UbcgDomain Integer getN_paralog_ubcg()
-            {'data_structure': {
-                'gene_name': [
-                    'n_genes', [
-                        'feature_index',
-                        'dna',
-                        'protein',
-                        'evalue'
-                    ]
-                ]}
-            },
-            {'data': data},
-        ]
+        bcg_dto = BcgDto(
+            uid=str(time.time()),
+            label=self._config['label'],
+            accession=self._config['accession'],
+            taxon_name=self._config['taxon'],
+            ncbi_name=None, #  is hardcode in origin
+            strain_name=self._config['strain'],
+            strain_type=self._config['type'],
+            strain_property=None, #  is hardcode in origin
+            taxonomy=self._config['taxonomy'],
+            n_ubcg=len(set(self._config['biological']['ubcg_gene'])),
+            n_genes=len(data),
+            n_paralog_ubcg=None, #  UbcgDomain Integer getN_paralog_ubcg()
+            UBCG_target_gene_number=92,
+            version=1.0,
+            data=data,
+        )
 
         with open(os.path.join(*(self._dirpath,
                                  self._config['paths']['extract_output'],
                                  file_path.rsplit()[0]+'.bcg')), 'w') as bcg_file:
-            json.dump(bcg, bcg_file)
+            json.dump(bcg_dto, bcg_file,
+                      cls=BcgDtoEncoder,
+                      indent=4 if self._config.format else 0)
 
 
     def _load_features(self, file_path):
@@ -164,8 +164,8 @@ class Main:
                                        self._config.paths.align_alignment_output,
                                        self._config.align_prefix)):
             sys.stderr.write(f'Given prefix {self._config.align_prefix} alredy exist. '
-                             f'Use another one or add -R flag to rewrite existing files.\n\t'
-                             f'WARNING! All existing files will be deleted.\n')
+                             'Use another one or add -R flag to rewrite existing files.\n\t'
+                             'WARNING! All existing files will be deleted.\n')
             sys.exit(1)
         self._replace_map = self._aligner.run()
 
@@ -208,6 +208,8 @@ def cli():
 @click.option('--type', default=None, help='add this flag if a strain is the type strain of species or subspecies (e.g. --type)')
 @click.option('--type', default=False, is_flag=True,
               help='add this flag if a strain is the type strain of species or subspecies (e.g. --type)')
+@click.option('--format', default=False, is_flag=True,
+              help='add this flag if you want to add indent to produced bcg-jsons')
 def extract(**kwargs):
     """
     Converting genome assemblies or contigs (fasta) to bcg files

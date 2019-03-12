@@ -97,8 +97,9 @@ class Aligner:
                 bcg = json.load(bcg_file)
             target_value = 'data', 'uid', 'label'
             #  filter bcg to get only needed values
-            data = {key: value for item in bcg for key, value in item.items()
-                    if any(param in item for param in target_value)}
+            # data = {key: value for item in bcg for key, value in item.items()
+            #         if any(param in item for param in target_value)}
+            data = {key: bcg[key] for key in target_value}
             #  like in original ubcg
             data['uid'] = 'zZ' + data['uid'] + 'zZ'
             # this is copypast fro, origin probably to check if we have duplicate labels
@@ -122,8 +123,8 @@ class Aligner:
                     if data['data'][gene][0] != 0:
                         nuc_file.write('>'+gene+'\n')
                         pro_file.write('>'+gene+'\n')
-                        nuc_file.write(data['data'][gene][1][1]+'\n')
-                        pro_file.write(data['data'][gene][1][2]+'\n')
+                        nuc_file.write(data['data'][gene][1]['nuc_sequence']+'\n')
+                        pro_file.write(data['data'][gene][1]['pro_sequence']+'\n')
             LOGGER.info('Wrote merged nucleotide file %s', self._merged_input_nuc)
             LOGGER.info('Wrote merged protein file %s', self._merged_input_pro)
         return replace_map
@@ -357,8 +358,7 @@ class Aligner:
         con_fasta_seq_list = FastaSeqList(aligned_file)
         # TODO: check if file not exist ?
         num_of_genes = con_fasta_seq_list.get_seq_list_len()
-        LOGGER.info('Filter gaps for %s gene, aligned file %s',
-                    gene, aligned_file)
+        LOGGER.info('Filter gaps for %s gene, aligned file %s', gene, aligned_file)
         seq_len = con_fasta_seq_list.get_seq_len()
         num_gaps = [0] * seq_len
         for fasta_seq in con_fasta_seq_list.get_seq_list():
