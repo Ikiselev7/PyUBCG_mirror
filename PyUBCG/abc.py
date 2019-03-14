@@ -83,6 +83,8 @@ class AbstractUtilWrapper(abc.ABC):
         :param name: program name
         :return:
         """
+        if self.__class__.__name__ == 'FastTree':
+            return shutil.which(self.__class__.__name__) is not None
         return shutil.which(self.__class__.__name__.lower()) is not None
 
 
@@ -139,4 +141,25 @@ class AbstractMafft(AbstractUtilWrapper):
         return super(AbstractMafft, cls).__new__(_impl)
 
     def run(self, file_name: str, *args, **kwargs):
+        raise NotImplementedError
+
+
+class AbstractFastTree(AbstractUtilWrapper):
+    """
+    Wrapper class to build tree with FastTree
+    """
+    def __new__(cls, config):
+        tool_type = config.tools.align_tool
+        if tool_type == 'FastTree':
+            #pylint: disable=cyclic-import
+            from PyUBCG.fasttree_wrapper import FastTree
+            #pylint: enable=cyclic-import
+            _impl = FastTree
+        else:
+            LOGGER.error('Incorrect align_tool in config')
+            raise Exception('Incorrect tool name for build tree step. '
+                            'Try to specify FastTree program in config')
+        return super(AbstractFastTree, cls).__new__(_impl)
+
+    def run(self, file_name: str, **kwargs):
         raise NotImplementedError
