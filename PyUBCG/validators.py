@@ -45,6 +45,7 @@ CONFIG_SCHEMA = tr.Dict({
             'mafft_res_pro_const': tr.String(),
             'mafft_res_dna_const': tr.String(),
             'align_align_const': tr.String(),
+            'align_tree_const': tr.String(),
             'align_concateneted': tr.String(),
         }),
     tr.Key('tools'):

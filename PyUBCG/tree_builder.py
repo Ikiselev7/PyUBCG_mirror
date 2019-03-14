@@ -16,20 +16,14 @@ class TreeBuilder:
 
         self._dirpath = os.path.dirname(
             os.path.dirname(os.path.abspath(__file__)))
-        if self.config.prefix is None:
-            self._run_id = self.config.run_id
-        else:
-            self._run_id = self.config.prefix
         self._target_gene_list = []
 
         self._tree_input_dir = os.path.join(
-            self._dirpath, self.config.paths.align_align_output)
+            self._dirpath, self.config.paths.align_filtering_output, self.config.align_prefix)
         self._tree_output_dir = os.path.join(
-            self._dirpath, self.config.paths.align_output)
-        self._tree_input_file = os.path.join(self._tree_input_dir,
-                                             f'{self._run_id}.UBCG'
-                                             f'.{self.config.align_mode}'
-                                             f'.{self.config.filter}.zZ.fasta')
+            self._dirpath, self.config.paths.align_output, self.config.align_prefix)
+        self._tree_input_file = os.path.join(self._tree_input_dir, f'UBCG'
+                                             f'{self.config.postfixes.align_align_const}')
 
     def run(self):
         LOGGER.info("Reconstructing the final tree..")
@@ -61,9 +55,7 @@ class TreeBuilder:
 
     def _get_tree_arguments(self, tree_input_file, bcg):
         tree_output_file = os.path.join(self._tree_output_dir,
-                                        f'{self._run_id}.{bcg}'
-                                        f'.{self.config.align_mode}'
-                                        f'.{self.config.filter}.zZ.nwk')
+                                        bcg+self.config.postfixes.align_tree_const)
         args = []
         if self.config.model is None:
             if self.config.align_mode == 'aa':
@@ -98,22 +90,23 @@ class TreeBuilder:
         return tree_args
 
     def _get_input_tree_file(self, bcg):
-        if self.config.align_mode == 'aa':
-            gene_tree_file = self._run_id + ".align." + bcg + \
-                             ".protein." + self.config.filter + ".zZ.fasta"
-        elif self.config.align_mode == 'nt':
-            gene_tree_file = self._run_id + ".align." + bcg + \
-                             ".dna." + self.config.filter + ".zZ.fasta"
-        elif self.config.align_mode == 'codon':
-            gene_tree_file = self._run_id + ".align." + bcg + \
-                             ".codon." + self.config.filter + ".zZ.fasta"
-        elif self.config.align_mode == 'codon12':
-            gene_tree_file = self._run_id + ".align." + bcg + \
-                             ".codon12." + self.config.filter + ".zZ.fasta"
-        else:
-            LOGGER.error('Unknown align mode is selected')
-            raise ValueError('Unknown align mode is selected')
-        return os.path.join(self._tree_input_dir, gene_tree_file)
+        # if self.config.align_mode == 'aa':
+        #     gene_tree_file = self._run_id + ".align." + bcg + \
+        #                      ".protein." + self.config.filter + ".zZ.fasta"
+        # elif self.config.align_mode == 'nt':
+        #     gene_tree_file = self._run_id + ".align." + bcg + \
+        #                      ".dna." + self.config.filter + ".zZ.fasta"
+        # elif self.config.align_mode == 'codon':
+        #     gene_tree_file = self._run_id + ".align." + bcg + \
+        #                      ".codon." + self.config.filter + ".zZ.fasta"
+        # elif self.config.align_mode == 'codon12':
+        #     gene_tree_file = self._run_id + ".align." + bcg + \
+        #                      ".codon12." + self.config.filter + ".zZ.fasta"
+        # else:
+        #     LOGGER.error('Unknown align mode is selected')
+        #     raise ValueError('Unknown align mode is selected')
+        # return os.path.join(self._tree_input_dir, gene_tree_file)
+        return os.path.join(self._tree_input_dir, bcg+self.config.postfixes.align_align_const)
 
     def _reconstruct_gene_trees(self):
         LOGGER.info("Reconstructing gene trees..")
@@ -127,14 +120,14 @@ class TreeBuilder:
         while n < len(ubcg_gene):
             bcg = ubcg_gene[n]
             gene_tree_file = self._get_input_tree_file(bcg)
-            json_file = self._tree_output_dir+gene_tree_file
-            if os.path.isfile(json_file):
-                fsl = FastaSeqList(json_file)
+            if os.path.isfile(gene_tree_file) is True:
+                fsl = FastaSeqList(gene_tree_file)
                 fsl.parse_file()
                 if fsl.get_seq_list_len() >= 4:
                     self._bcg_num += 1
                     self._target_gene_list.append(bcg)
-                    LOGGER.info(bcg + ": " + fsl.get_seq_len())
+                    LOGGER.info(bcg + ": " + str(fsl.get_seq_len()))
+            n += 1
 
         LOGGER.info(f"The total number of gene "
                     f"trees to be reconstructed: {self._bcg_num}")

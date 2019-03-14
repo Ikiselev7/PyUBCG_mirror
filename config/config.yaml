@@ -33,6 +33,7 @@ postfixes:
   mafft_res_pro_const: .protein.zZ.fasta
   mafft_res_dna_const: .dna.zZ.fasta
   align_align_const: .zZ.fasta
+  align_tree_const: .zZ.nwk
   align_concateneted: 'concatenating_output.fasta'
 tools:
   prodigal_like_tool: prodigal

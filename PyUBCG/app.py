@@ -16,6 +16,7 @@ import click
 from PyUBCG.abc import AbstractProdigal, AbstractHmmsearch, \
     AbstractConfigLoader, AbstractMafft
 from PyUBCG.aligner import Aligner
+from PyUBCG.tree_builder import TreeBuilder
 
 logging.config.fileConfig('config/logging.conf')
 LOGGER = logging.getLogger('PyUBCG')
@@ -44,6 +45,7 @@ class Main:
             self._mafft = AbstractMafft(self._config)
             self._aligner = Aligner(self._config)
             self._replace_map = {}
+            self._tree_builder = TreeBuilder(self._config, self._replace_map)
 
 
     def _flush_prefix_folders(self):
@@ -168,7 +170,8 @@ class Main:
                              f'WARNING! All existing files will be deleted.\n')
             sys.exit(1)
         self._replace_map = self._aligner.run()
-
+        self._tree_builder.replace_map = self._replace_map
+        self._tree_builder.run()
 
 
     def multiple_extract(self):
@@ -234,6 +237,12 @@ codon12: same as “codon” option but only 1st and 2nd nucleotides of a codon 
 -- 100 to select positions that are present in all genomes
 -- 50 to select positions that are present in a half of genomes
 """)
+@click.option('-m', '--model', default='JCcat',
+              help="""A model used to infer trees
+              For FastTree - NUCLEOTIDE sequences 
+                  JCcat, GTRcat, JCgamma, GTRgamma
+              For FastTree - AMINO ACID sequences 
+                  JTTcat, LGcat, WAGcat, JTTgamma, LGgamma, WAGgamma""")
 @click.option('--align_prefix', help="a prefix is to appended to all output files to recognize each different run. If you don’t designate, one will be generated automatically.")
 @click.option('--gsi_threshold', type=click.IntRange(min=0, max=100),
               default=95, help='Threshold for Gene Support Index (GSI). 95 means 95%. (default = 95)')

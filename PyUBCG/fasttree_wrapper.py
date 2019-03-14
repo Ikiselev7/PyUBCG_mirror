@@ -5,9 +5,9 @@
 
 """
 
-from subprocess import Popen, PIPE
+import subprocess
 import logging
-import os
+
 
 from PyUBCG.abc import AbstractFastTree
 
@@ -22,6 +22,8 @@ class FastTree(AbstractFastTree):
         self._config = config
 
     def run(self, file_name, **kwargs) -> None:
-        proc = Popen(kwargs['tree_args'])
+        LOGGER.info('Build tree')
+        proc = subprocess.Popen(kwargs['tree_args'], stdout=subprocess.DEVNULL,
+                                stderr=subprocess.DEVNULL)
 
         proc.wait()
