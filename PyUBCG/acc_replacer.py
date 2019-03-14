@@ -35,3 +35,4 @@ class ReplaceAcc:
                 res = res_str.replace(self._flag+self._acc_list[acc]+self._flag, "'"+label+"'")
             else:
                 res = res_str.replace(self._flag+self._acc_list[acc]+self._flag, self._label_list[acc])
+        return res

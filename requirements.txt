@@ -2,3 +2,4 @@ Click==7.0
 trafaret-config==2.0.2
 pylint
 pytest
+biopython

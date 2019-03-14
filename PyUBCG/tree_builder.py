@@ -1,9 +1,13 @@
 import logging
 import os
 
+from Bio import Phylo
+from Bio.Phylo import Consensus
+
 from PyUBCG.fasta_seq_list import FastaSeqList
 from PyUBCG.fasttree_wrapper import FastTree
 from PyUBCG.label_replacer import LabelReplacer
+
 LOGGER = logging.getLogger('PyUBCG.tree_builder')
 
 
@@ -106,7 +110,12 @@ class TreeBuilder:
         #     LOGGER.error('Unknown align mode is selected')
         #     raise ValueError('Unknown align mode is selected')
         # return os.path.join(self._tree_input_dir, gene_tree_file)
-        return os.path.join(self._tree_input_dir, bcg+self.config.postfixes.align_align_const)
+
+        # mode = {'aa': '.protein.', 'nt': '.dna.', 'codon': 'codon', 'codon12': 'codon12'}
+        # gene_tree_file = self._run_id + ".align." + bcg + mode[self.config.align_mode] \
+        #                  + self.config.filter + ".zZ.fasta"
+        return os.path.join(self._tree_input_dir, bcg + self.config.postfixes.align_align_const)
+
 
     def _reconstruct_gene_trees(self):
         LOGGER.info("Reconstructing gene trees..")
@@ -165,14 +174,19 @@ class TreeBuilder:
                 genome_num += 1
 
         # TODO call lumberjack
-        tmp = ''
+        all_nwk = []
+        trees = []
+        for nwk_file in all_nwk:
+            trees.append(Phylo.read(nwk_file, 'newick'))
+        tree = Consensus.majority_consensus(trees, cutoff=(100-self.config.gsi_threshold)* genome_num/100)
+
 
         ubcg_gsi_file = os.path.join(self._tree_output_dir, f'{self._run_id}.'
                                      f'UBCG_gsi({self._bcg_num})'
                                      f'.{self.config.align_mode}'
                                      f'.{self.config.filter}.zZ.nwk', )
         with open(ubcg_gsi_file, 'w') as f:
-            f.write(tmp)
+            Phylo.write(tree, f, 'newick')
 
         bcg_file = os.path.join(self._tree_output_dir, self._run_id)
         temp_json = {}
