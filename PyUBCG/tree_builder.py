@@ -64,11 +64,23 @@ class TreeBuilder:
 
         ft = FastTree(self.config)
         ft.run(self._tree_input_file, tree_args=self._args_tree,
-               output_file=os.path.join(self._align_output_dir, 'UBCG' +
+               output_file=os.path.join(self._align_output_dir, 'PyUBCG' +
                                         self.config.postfixes.align_tree_const))
+
+
         self._reconstruct_gene_trees()
         self._make_all_gene_trees()
-        self._calculate_gsi()
+        if self.config.draw:
+            tree = Phylo.read(os.path.join(self._align_output_dir, 'PyUBCG' +
+                                           self.config.postfixes.align_tree_const), 'newick')
+            Phylo.draw(tree,
+                       savefig={'fname': os.path.join(self._align_output_dir,
+                                                      self.config.align_prefix+'.png'),
+                                'dpi': 300, 'bbox_inches': 'tight'})
+
+        # FIXME
+        # self._calculate_gsi()
+
 
     def _build_multiple_tree(self):
         """
@@ -141,6 +153,7 @@ class TreeBuilder:
                     'trees to be reconstructed: %s', self._bcg_num)
         self._build_multiple_tree()
         LOGGER.info('All of the gene trees were reconstructed.')
+
 
     def _make_all_gene_trees(self):
         """

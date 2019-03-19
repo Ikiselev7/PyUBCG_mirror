@@ -102,6 +102,7 @@ class Aligner:
             check_label[data['uid']] = check_label.get(data['uid'], 0) + 1
             if check_label[data['uid']] != 1:
                 data['label'] = data['label'] + '_' + check_label[data['uid']]
+                data['label'] = data['label'].replace(' ', '_')
             replace_map[data['uid']] = data['label']
             self._merged_input_nuc = os.path.join(
                 self._align_inputmerge_with_prefix,
@@ -111,8 +112,8 @@ class Aligner:
                 self.config.prefixes.pro_input + self.config.postfixes.pro_input_const)
             with open(self._merged_input_nuc, 'a+') as nuc_file, \
                     open(self._merged_input_pro, 'a+') as pro_file:
-                nuc_file.write('#'+data['uid']+'\n')
-                pro_file.write('#'+data['uid']+'\n')
+                nuc_file.write('#'+data['label']+'\n')
+                pro_file.write('#'+data['label']+'\n')
                 for gene in data['data']:
                     #  in origin they collect all UBCG in bcg, even if
                     #  genome does not have them, this check is to server original bcg

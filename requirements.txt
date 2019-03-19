@@ -1,5 +1,7 @@
 Click==7.0
 trafaret-config==2.0.2
+matplotlib==3.0.3
+biopython==1.73
 pylint
 pytest
 biopython

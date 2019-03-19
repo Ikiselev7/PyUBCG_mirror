@@ -173,18 +173,32 @@ class Main:
         self._tree_builder.replace_map = self._replace_map
         self._tree_builder.run()
 
+
     def multiple_extract(self):
         """
         method to process extract step on every files in input folder
         :return:
         """
+        fastas = os.listdir(os.path.join(self._dirpath,
+                                         self._config.paths.fasta_input_folder))
+        self._config.accession = None
+        self._config.taxon = None
+        self._config.taxonomy = None
+        self._config.strain = None
+        self._config.format = None
+        self._config.type = None
+        for fasta in fastas:
+            name = fasta.split('/')[-1].rsplit('.', 1)[0]
+            self._config.label = name
+            self.extract(fasta)
 
-    def extract(self):
+
+    def extract(self, file_path=None):
         """
         Main method to perform all work
         :return:
         """
-        file_path = self._config['input_file']
+        file_path = self._config['input_file'] if not file_path else file_path
         self._prodigal.run(file_path)
         self._hmmsearch.run(file_path)
         self._process_hmm_output_to_json(file_path)
@@ -207,7 +221,6 @@ def cli():
 @click.option('-t', '--taxon', default=None, help='name of species (e.g. --taxon “Escherichia coli”)')
 @click.option('-tax', '--taxonomy', default=None, help='Taxonomy')
 @click.option('-s', '--strain', default=None, help='name of the strain (e.g. --strain “JC 126”)')
-@click.option('--type', default=None, help='add this flag if a strain is the type strain of species or subspecies (e.g. --type)')
 @click.option('--type', default=False, is_flag=True,
               help='add this flag if a strain is the type strain of species or subspecies (e.g. --type)')
 @click.option('--format', default=False, is_flag=True,
@@ -218,6 +231,20 @@ def extract(**kwargs):
     """
     app = Main(**kwargs, command='extract')
     app.extract()
+
+
+@cli.command()
+@click.option('-i', '--fasta_input_folder', required=True, help='Path to fastas files to be extracted.')
+@click.option('-c', '--config', default='config/config.yaml',
+              help='Specify path to your config if it is not default')
+@click.option('--format', default=False, is_flag=True,
+              help='add this flag if you want to add indent to produced bcg-jsons')
+def multiple_extract(**kwargs):
+    """
+    Converting genomes assemblies or contigs (fasta) to bcg files in given folder.
+    """
+    app = Main(**kwargs, command='extract')
+    app.multiple_extract()
 
 
 @cli.command()
@@ -249,12 +276,14 @@ codon12: same as “codon” option but only 1st and 2nd nucleotides of a codon 
               default=95, help='Threshold for Gene Support Index (GSI). 95 means 95%. (default = 95)')
 @click.option('-R', '--rewrite', default=False, is_flag=True,
               help='add this flag if you want to rewrite existing files after previous run.')
+@click.option('-d', '--draw', default=False, is_flag=True,
+              help='Add this flag if you want to see created tree on plot.')
 #@click.option('--raxml', help='Use RAxML for phylogeny reconstruction (Default: FastTree). Be aware that RAxML is much slower than FastTree.')
 #@click.option('--zZ', help='Make zZ-formatted files. This additionally creates fasta/nwk files with zZ+uid+zZ format for the names of each genome')
 def align(**kwargs):
     """
         Generating multiple alignments from bcg files
-        """
+    """
 
     app = Main(**kwargs, command='align')
     app.align()
