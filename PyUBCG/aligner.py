@@ -37,6 +37,7 @@ class Aligner:
         self._align_inputparse_with_prefix = ''
         self._align_filtering_output_with_prefix = ''
         self._align_mafft_output_with_prefix = ''
+        self._align_concatenating_output_with_prefix = ''
         self._align_align_with_prefix = ''
         self._merged_input_nuc = ''
         self._merged_input_pro = ''
@@ -62,6 +63,11 @@ class Aligner:
         self._align_filtering_output_with_prefix = self._create_folder_if_not_exist(
             self.config.paths.align_filtering_output,
             self.config.prefixes.align_prefix
+        )
+        self._align_concatenating_output_with_prefix = self._create_folder_if_not_exist(
+            self.config.paths.align_filtering_output,
+            self.config.prefixes.align_prefix,
+            self.config.paths.align_concatenating_output
         )
         self._align_mafft_output_with_prefix = self._create_folder_if_not_exist(
             self.config.paths.align_mafft_output,
@@ -102,7 +108,7 @@ class Aligner:
             check_label[data['uid']] = check_label.get(data['uid'], 0) + 1
             if check_label[data['uid']] != 1:
                 data['label'] = data['label'] + '_' + check_label[data['uid']]
-                data['label'] = data['label'].replace(' ', '_')
+            data['label'] = data['label'].replace(' ', '_')
             replace_map[data['uid']] = data['label']
             self._merged_input_nuc = os.path.join(
                 self._align_inputmerge_with_prefix,
@@ -297,7 +303,7 @@ class Aligner:
                     concatenated_fasta.append(
                         gene_fasta_seq_list_map[fasta_list].seq_list[seq_name].seq)
         output_file = os.path.join(
-            self._align_filtering_output_with_prefix,
+            self._align_concatenating_output_with_prefix,
             'UBCG' + self.config.postfixes.align_align_const)
         with open(output_file, 'w') as f:
             f.write(''.join(concatenated_fasta))

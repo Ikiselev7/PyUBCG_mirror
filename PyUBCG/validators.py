@@ -24,6 +24,7 @@ CONFIG_SCHEMA = tr.Dict({
             'align_input_merge': tr.String(),
             'align_input_parse': tr.String(),
             'align_filtering_output': tr.String(),
+            'align_concatenating_output': tr.String(),
             'align_align_output': tr.String(),
             'align_trees_output': tr.String(),
         }),

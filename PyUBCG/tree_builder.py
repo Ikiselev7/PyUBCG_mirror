@@ -41,6 +41,8 @@ class TreeBuilder:
             self._dirpath, self.config.paths.align_trees_output,
             self.config.align_prefix)
         self._tree_input_file = os.path.join(self._tree_input_dir,
+                                             self.config.paths.
+                                             align_concatenating_output,
                                              'UBCG' +
                                              self.config.postfixes
                                              .align_align_const)

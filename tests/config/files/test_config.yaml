@@ -18,6 +18,7 @@ paths:
   align_filtering_output: align_filtering_output
   align_align_output: align_align_output
   align_trees_output: align_trees_output
+  align_concatenating_output: concatenating_output
 prefixes:
   pro_prefix: gene_pro
   nuc_prefix: gene_nuc

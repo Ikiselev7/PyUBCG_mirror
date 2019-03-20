@@ -131,7 +131,8 @@ class Main:
 
         with open(os.path.join(*(self._dirpath,
                                  self._config['paths']['extract_output'],
-                                 file_path.rsplit()[0]+'.bcg')), 'w') as bcg_file:
+                                 ''.join(file_path.rsplit('.')[:-1])+'.bcg')),
+                  'w') as bcg_file:
             json.dump(bcg_dto, bcg_file,
                       cls=BcgDtoEncoder,
                       indent=4 if self._config.format else 0)

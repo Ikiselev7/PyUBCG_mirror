@@ -16,6 +16,7 @@ paths:
   align_input_merge: align_input_merge
   align_input_parse: align_input_parse
   align_filtering_output: align_filtering_output
+  align_concatenating_output: concatenating_output
   align_align_output: align_align_output
   align_trees_output: align_trees_output
 prefixes:

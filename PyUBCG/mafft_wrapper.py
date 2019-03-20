@@ -55,13 +55,12 @@ class Mafft(AbstractMafft):
         args = ['mafft', '--quiet', '--thread', str(self._config.general.processes),
                 input_file]
         proc = Popen(args, stdout=PIPE, stderr=PIPE, universal_newlines=True)
-        err = proc.stderr.read()
-        if err == '':
+        proc_out, proc_err = proc.communicate()
+        if proc_err == '':
             with open(output_file, 'w') as out:
-                for line in proc.stdout:
+                for line in proc_out:
                     out.write(line)
         else:
-            LOGGER.error(err)
-            raise ValueError(f'Invalid args for mafft,\n\t{err}')
-        proc.wait()
+            LOGGER.error(proc_err)
+            raise ValueError(f'Invalid args for mafft,\n\t{proc_err}')
         return output_file, gene_name
