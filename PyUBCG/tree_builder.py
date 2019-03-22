@@ -32,6 +32,9 @@ class TreeBuilder:
         self._target_gene_list = []
 
         self._tree_input_dir = os.path.join(
+            self._dirpath, self.config.paths.align_concatenating_output,
+            self.config.align_prefix)
+        self._all_trees_input_dir = os.path.join(
             self._dirpath, self.config.paths.align_filtering_output,
             self.config.align_prefix)
         self._align_output_dir = os.path.join(
@@ -41,18 +44,12 @@ class TreeBuilder:
             self._dirpath, self.config.paths.align_trees_output,
             self.config.align_prefix)
         self._tree_input_file = os.path.join(self._tree_input_dir,
-                                             self.config.paths.
-                                             align_concatenating_output,
                                              'UBCG' +
                                              self.config.postfixes
                                              .align_align_const)
 
     def run(self):
         """Main method to process build tree step"""
-        if os.path.isdir(self._tree_output_dir) is False:
-            os.makedirs(self._tree_output_dir)
-        if os.path.isdir(self._align_output_dir) is False:
-            os.makedirs(self._align_output_dir)
         LOGGER.info("Reconstructing the final tree..")
         if os.path.isfile(self._tree_input_file) is False:
             LOGGER.error("The input file (concatenated sequence) "
@@ -69,7 +66,6 @@ class TreeBuilder:
                output_file=os.path.join(self._align_output_dir, 'PyUBCG' +
                                         self.config.postfixes.align_tree_const))
 
-
         self._reconstruct_gene_trees()
         self._make_all_gene_trees()
         if self.config.draw:
@@ -83,14 +79,13 @@ class TreeBuilder:
         # FIXME
         # self._calculate_gsi()
 
-
     def _build_multiple_tree(self):
         """
         Method for multiple running FastTree
         :return:
         """
         for bcg in self._target_gene_list:
-            tree_input_file = os.path.join(self._tree_input_dir,
+            tree_input_file = os.path.join(self._all_trees_input_dir,
                                            bcg+self.config.postfixes.
                                            align_align_const)
             tree_output_file = os.path.join(self._tree_output_dir, bcg +
@@ -141,7 +136,7 @@ class TreeBuilder:
 
         ubcg_gene = self.config.biological.ubcg_gene
         for bcg in ubcg_gene:
-            gene_tree_file = os.path.join(self._tree_input_dir,
+            gene_tree_file = os.path.join(self._all_trees_input_dir,
                                           bcg+self.config.postfixes.
                                           align_align_const)
             if os.path.isfile(gene_tree_file) is True:
@@ -155,7 +150,6 @@ class TreeBuilder:
                     'trees to be reconstructed: %s', self._bcg_num)
         self._build_multiple_tree()
         LOGGER.info('All of the gene trees were reconstructed.')
-
 
     def _make_all_gene_trees(self):
         """

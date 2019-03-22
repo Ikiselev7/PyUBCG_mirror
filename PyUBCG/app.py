@@ -36,9 +36,17 @@ class Main:
         self._config = AbstractConfigLoader(self._args).get_config()
         self._config['command'] = command
         LOGGER.info('Create program structure')
-        self._init_program_structure()
         if command == 'align':
+            if os.path.exists(os.path.join(self._dirpath,
+                                           self._config.paths.align_output,
+                                           self._config.align_prefix)) and not self._config.rewrite:
+                sys.stderr.write(
+                    f'Given prefix {self._config.align_prefix} alredy exist. '
+                    'Use another one or add -R flag to rewrite existing files.\n\t'
+                    'WARNING! All existing files will be deleted.\n')
+                sys.exit(1)
             self._flush_prefix_folders()
+        self._init_program_structure()
         LOGGER.info('Initialize Program wrappers')
         self._prodigal = AbstractProdigal(self._config)
         self._hmmsearch = AbstractHmmsearch(self._config)
@@ -65,6 +73,8 @@ class Main:
                 continue
             path = os.path.join(self._dirpath,
                                 self._config['paths'][folder])
+            if folder.startswith('align'):
+                path = os.path.join(self._dirpath, self._config['paths'][folder], self._config.prefixes.align_prefix)
             if not os.path.exists(path):
                 os.makedirs(path)
 
@@ -163,13 +173,6 @@ class Main:
         Align step
         :return:
         """
-        if os.path.exists(os.path.join(self._dirpath,
-                                       self._config.paths.align_output,
-                                       self._config.align_prefix)):
-            sys.stderr.write(f'Given prefix {self._config.align_prefix} alredy exist. '
-                             'Use another one or add -R flag to rewrite existing files.\n\t'
-                             'WARNING! All existing files will be deleted.\n')
-            sys.exit(1)
         self._replace_map = self._aligner.run()
         self._tree_builder.replace_map = self._replace_map
         self._tree_builder.run()

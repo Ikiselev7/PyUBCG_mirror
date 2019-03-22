@@ -32,58 +32,47 @@ class Aligner:
         self._bcg_num = 0
         self._mafft = AbstractMafft(self.config)
         self._genes_processed_with_mafft = []
-        self._extract_dir = ''
-        self._align_inputmerge_with_prefix = ''
-        self._align_inputparse_with_prefix = ''
-        self._align_filtering_output_with_prefix = ''
-        self._align_mafft_output_with_prefix = ''
-        self._align_concatenating_output_with_prefix = ''
-        self._align_align_with_prefix = ''
         self._merged_input_nuc = ''
         self._merged_input_pro = ''
-        self._align_alignment_output = ''
-
+        self._extract_dir = os.path.join(self._dirpath,
+                                         self.config.bcg_dir)
+        self._align_inputmerge_with_prefix = os.path.join(
+            self.config.paths.align_input_merge,
+            self.config.prefixes.align_prefix
+        )
+        self._align_inputparse_with_prefix = os.path.join(
+            self.config.paths.align_input_parse,
+            self.config.prefixes.align_prefix
+        )
+        self._align_filtering_output_with_prefix = os.path.join(
+            self.config.paths.align_filtering_output,
+            self.config.prefixes.align_prefix
+        )
+        self._align_concatenating_output_with_prefix = os.path.join(
+            self.config.paths.align_concatenating_output,
+            self.config.prefixes.align_prefix
+        )
+        self._align_mafft_output_with_prefix = os.path.join(
+            self.config.paths.align_mafft_output,
+            self.config.prefixes.align_prefix
+        )
+        self._align_align_with_prefix = os.path.join(
+            self.config.paths.align_align_output,
+            self.config.prefixes.align_prefix
+        )
 
     def run(self):
         """main method to process align step"""
-        self._extract_dir = os.path.join(self._dirpath,
-                                         self.config.bcg_dir)
         if not os.path.exists(self._extract_dir):
             raise ValueError('Extract folder not exist')
         if len(os.listdir(self._extract_dir)) < 4:
             raise ValueError('To few bcg to align')
-        self._align_inputmerge_with_prefix = self._create_folder_if_not_exist(
-            self.config.paths.align_input_merge,
-            self.config.prefixes.align_prefix
-        )
-        self._align_inputparse_with_prefix = self._create_folder_if_not_exist(
-            self.config.paths.align_input_parse,
-            self.config.prefixes.align_prefix
-        )
-        self._align_filtering_output_with_prefix = self._create_folder_if_not_exist(
-            self.config.paths.align_filtering_output,
-            self.config.prefixes.align_prefix
-        )
-        self._align_concatenating_output_with_prefix = self._create_folder_if_not_exist(
-            self.config.paths.align_filtering_output,
-            self.config.prefixes.align_prefix,
-            self.config.paths.align_concatenating_output
-        )
-        self._align_mafft_output_with_prefix = self._create_folder_if_not_exist(
-            self.config.paths.align_mafft_output,
-            self.config.prefixes.align_prefix
-        )
-        self._align_align_with_prefix = self._create_folder_if_not_exist(
-            self.config.paths.align_align_output,
-            self.config.prefixes.align_prefix
-        )
 
         replace_map = self._input_merge()
         self._input_parsing()
         self._align()
         self._concatenating()
         return replace_map
-
 
     def _input_merge(self):
         """
@@ -378,15 +367,3 @@ class Aligner:
         output_path = os.path.join(self._align_filtering_output_with_prefix,
                                    gene+self.config.postfixes.align_align_const)
         con_fasta_seq_list.write_file(output_path)
-
-
-    def _create_folder_if_not_exist(self, *args):
-        """
-        Create unique folder with given prefix
-        :param args:
-        :return: created dir path
-        """
-        path = os.path.join(self._dirpath, *args)
-        if not os.path.exists(path):
-            os.makedirs(path)
-        return path
