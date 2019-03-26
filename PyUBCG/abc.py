@@ -12,6 +12,7 @@ import shutil
 SUPPORTED_CONFIG_FORMATS = ['yaml']
 LOGGER = logging.getLogger('PyUBCG.abc')
 
+DOCKERIZED_PROGRAMS = ['transdecoder']
 
 class AbstractConfigLoader(abc.ABC):
     """
@@ -63,9 +64,10 @@ class AbstractUtilWrapper(abc.ABC):
         """
         tool = super().__new__(cls)
         # pylint: disable=W0212
-        if not tool._check_program_exists():
-            LOGGER.debug('%s is not installed', cls.__name__)
-            raise ValueError('Program %s is not installed' % cls.__name__)
+        if tool.__class__.__name__.lower() not in DOCKERIZED_PROGRAMS:
+            if not tool._check_program_exists():
+                LOGGER.debug('%s is not installed', cls.__name__)
+                raise ValueError('Program %s is not installed' % cls.__name__)
         return tool
 
     @abc.abstractmethod
@@ -111,11 +113,14 @@ class AbstractProdigal(AbstractUtilWrapper):
 
     def __new__(cls, config):
         tool_type = config['tools']['prodigal_like_tool']
+        # pylint: disable=cyclic-import
         if tool_type == 'prodigal':
-            #pylint: disable=cyclic-import
             from PyUBCG.prodigal_wrapper import Prodigal
-            #pylint: enable=cyclic-import
             _impl = Prodigal
+        if tool_type == 'transdecoder':
+            from PyUBCG.transdecoder_wrapper import Transdecoder
+            _impl = Transdecoder
+        # pylint: enable=cyclic-import
         return super(AbstractProdigal, cls).__new__(_impl)
 
     def run(self, file_name: str, *args, **kwargs):

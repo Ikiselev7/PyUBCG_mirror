@@ -36,7 +36,7 @@ postfixes:
   align_align_const: .zZ.fasta
   align_tree_const: .zZ.nwk
 tools:
-  prodigal_like_tool: prodigal
+  prodigal_like_tool: transdecoder
   hmmsearch_like_tool: hmmsearch
   mafft_like_tool: mafft
   align_tool: FastTree

@@ -1,4 +1,4 @@
 [DESIGN]
 
 min-public-methods=0
-disable=C0103,C0301,invalid-name,too-many-instance-attributes,too-many-locals,arguments-differ,fixme
+disable=C0103,C0301,invalid-name,too-many-instance-attributes,too-many-locals,arguments-differ,fixme,duplicate-code
