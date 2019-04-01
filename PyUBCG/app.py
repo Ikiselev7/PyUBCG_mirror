@@ -215,6 +215,7 @@ def cli():
 
 @cli.command()
 @click.option('-i', '--input_file', required=True, help='Path to fasta file to be extracted')
+@click.option('-o', '--extract_output', default='extract_output', help="directory for created bcg files")
 @click.option('-c', '--config', required=False, default='config/config.yaml',
               help='Specify path to your config if it is not default ')
 @click.option('-l', '--label', default=None,
@@ -238,6 +239,7 @@ def extract(**kwargs):
 
 
 @cli.command()
+@click.option('-o', '--extract_output', default='extract_output', help="directory for created bcg files")
 @click.option('-i', '--fasta_input_folder', required=True, help='Path to fastas files to be extracted.')
 @click.option('-c', '--config', default='config/config.yaml',
               help='Specify path to your config if it is not default')
@@ -255,7 +257,7 @@ def multiple_extract(**kwargs):
 @click.option('--bcg_dir', default='extract_output', help="directory for bcg files that you want to include in the alignment.")
 @click.option('-c', '--config', required=False, default='config/config.yaml',
               help='Specify path to your config if it is not default ')
-@click.option('--out_dir', default='align_output', help='directory where all output files will be')
+@click.option('-o', '--out_dir', default='align_output', help='directory where all output files will be')
 @click.option('-a', '--align_mode', type=click.Choice(['nt', 'aa', 'codon', 'codon12']), default='codon',
               help='''nt: nucleotide sequence alignment
 aa: amino acid sequence alignment
