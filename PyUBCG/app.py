@@ -192,6 +192,7 @@ class Main:
         self._config.format = None
         self._config.type = None
         for fasta in fastas:
+            LOGGER.info("Processing: " + fasta)
             name = fasta.split('/')[-1].rsplit('.', 1)[0]
             self._config.label = name
             self.extract(fasta)
