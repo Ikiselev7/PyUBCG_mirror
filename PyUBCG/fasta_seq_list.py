@@ -5,6 +5,7 @@
 """
 
 import logging
+import os
 
 from PyUBCG.fasta_seq import FastaSeq
 
@@ -91,17 +92,25 @@ class FastaSeqList:
         """
         return list(self.seq_list.values())
 
-    def write_file(self, path):
+    def write_file(self, path, by_spicies=False):
         """
         Method to write and concatenate all instances sequences inside map
         :param path:
         :return:
         """
-        with open(path, 'w') as file:
-            for seq in self.seq_list:
+        if not by_spicies:
+            with open(path, 'w') as file:
+                for seq in self.seq_list:
+                    title = self.seq_list[seq].title
+                    seq = self.seq_list[seq].seq
+                    file.write('>' + title + '\n' + seq+ '\n')
+        else:
+            for seq in self.seq.list:
                 title = self.seq_list[seq].title
                 seq = self.seq_list[seq].seq
-                file.write('>'+title+'\n'+seq+'\n')
+                LOGGER.info('Write alignmend genome with core genes for %s', title)
+                with open(os.path.join(path, title)+'.fasta', 'w', encoding='utf-8') as ouf:
+                    ouf.write('>' + title + '\n' + seq + '\n')
 
     def __getattr__(self, item):
         return self.seq_list[item]

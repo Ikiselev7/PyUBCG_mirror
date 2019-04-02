@@ -367,3 +367,4 @@ class Aligner:
         output_path = os.path.join(self._align_filtering_output_with_prefix,
                                    gene+self.config.postfixes.align_align_const)
         con_fasta_seq_list.write_file(output_path)
+        con_fasta_seq_list.write_file(output_path, by_spicies=True)
