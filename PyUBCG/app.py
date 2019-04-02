@@ -180,6 +180,7 @@ def cli():
 
 @cli.command()
 @click.option('-i', '--input_file', required=True, help='Path to fasta file to be extracted')
+@click.option('-o', '--extract_output', default='extract_output', help="directory for created bcg files")
 @click.option('-c', '--config', required=False, default='config/config.yaml',
               help='Specify path to your config if it is not default ')
 @click.option('-l', '--label', default=None,
@@ -190,8 +191,8 @@ def cli():
 @click.option('-t', '--taxon', default=None, help='name of species (e.g. --taxon “Escherichia coli”)')
 @click.option('-tax', '--taxonomy', default=None, help='Taxonomy')
 @click.option('-s', '--strain', default=None, help='name of the strain (e.g. --strain “JC 126”)')
-@click.option('--type', default=False, is_flag=True,
-              help='add this flag if a strain is the type strain of species or subspecies (e.g. --type)')
+@click.option('--type', default='',
+              help='add this flag if a strain is the type strain of species or subspecies (e.g. --type "JC 126")')
 def extract(**kwargs):
     """
     Converting genome assemblies or contigs (fasta) to bcg files
@@ -203,7 +204,7 @@ def extract(**kwargs):
 @click.option('-bcg_dir', required=True, help="directory for bcg files that you want to include in the alignment.")
 @click.option('-out_dir', help='directory where all output files will be')
 @click.option('-a', type=click.Choice(['nt', 'aa', 'codon', 'codon12']), help='''nt: nucleotide sequence alignment
-aa: amino acid sequence alignment
+aa: amino acid sequence align   ment
 codon: codon-based alignment (output is nucleotide sequences, but alignment is carried out using amino acid sequences) DEFAULT.
 codon12: same as “codon” option but only 1st and 2nd nucleotides of a codon are selected. The 3rd position is usually of high variability.
 ''')
