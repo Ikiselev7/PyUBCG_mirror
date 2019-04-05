@@ -294,6 +294,15 @@ class Aligner:
         output_file = os.path.join(
             self._align_concatenating_output_with_prefix,
             'UBCG' + self.config.postfixes.align_align_const)
+
+        for line in concatenated_fasta:
+            if line[0] in ('>', '\n'):
+                path = os.path.join(self._align_concatenating_output_with_prefix,
+                                    'concat_'+line.strip().replace('>', '')+'.fasta')
+            else:
+                with open(path, 'w') as ouf:
+                    ouf.write('>'+path+'\n')
+                    ouf.write(line)
         with open(output_file, 'w') as f:
             f.write(''.join(concatenated_fasta))
 
@@ -367,4 +376,3 @@ class Aligner:
         output_path = os.path.join(self._align_filtering_output_with_prefix,
                                    gene+self.config.postfixes.align_align_const)
         con_fasta_seq_list.write_file(output_path)
-        # con_fasta_seq_list.write_file(output_path, by_spicies=True)
