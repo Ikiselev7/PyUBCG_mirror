@@ -39,9 +39,13 @@ class Main:
         self._config['command'] = command
         LOGGER.info('Create program structure')
         if command == 'align':
-            if os.path.exists(os.path.join(self._dirpath,
-                                           self._config.paths.align_output,
-                                           self._config.align_prefix)) and not self._config.rewrite:
+            if os.path.exists(
+                    os.path.join(
+                        self._dirpath,
+                        self._config.paths.align_output,
+                        self._config.align_prefix
+                    )
+            ) and not self._config.rewrite:
                 sys.stderr.write(
                     f'Given prefix {self._config.align_prefix} alredy exist. '
                     'Use another one or add -R flag to rewrite existing files.\n\t'
@@ -141,10 +145,10 @@ class Main:
             data=data,
         )
 
-        with open(os.path.join(*(self._dirpath,
-                                 self._config['paths']['extract_output'],
-                                 ''.join(file_path.rsplit('.')[:-1])+'.bcg')),
-                  'w') as bcg_file:
+        with open(os.path.join(
+                        self._dirpath,
+                        self._config['paths']['extract_output'],
+                        ''.join(file_path.rsplit('.')[:-1])+'.bcg'), 'w') as bcg_file:
             json.dump(bcg_dto, bcg_file,
                       cls=BcgDtoEncoder,
                       indent=4 if self._config.format else 0)
@@ -155,9 +159,9 @@ class Main:
                             self._config['prefixes']['nuc_prefix'])
         genes = {}
         for feature in features_folders:
-            with open(os.path.join(*(self._dirpath,
-                                     self._config['paths']['prodigal_output'],
-                                     feature, file_path))) as feature_file:
+            with open(os.path.join(self._dirpath,
+                                   self._config['paths']['prodigal_output'],
+                                   feature, file_path)) as feature_file:
                 data = feature_file.readlines()
                 for line in data:
                     if line.startswith('>'):
@@ -172,9 +176,12 @@ class Main:
 
     def align(self):
         """
-        Align step
-        :return:
+        Method to perform alignment and tree building. Method consume
+        bcg created in extract step
         """
+        # replace map is map with meta info in order later
+        # to restore meta info on nwk tree, but since we use label, this
+        # can later be deleted
         self._replace_map = self._aligner.run()
         self._tree_builder.replace_map = self._replace_map
         self._tree_builder.run()
@@ -183,7 +190,8 @@ class Main:
     def multiple_extract(self):
         """
         method to process extract step on every files in input folder
-        :return:
+        We assume that name of the file is sufficient for later identifying
+        and use it as label later.
         """
         fastas = os.listdir(os.path.join(self._dirpath,
                                          self._config.paths.fasta_input_folder))
@@ -207,7 +215,17 @@ class Main:
     def extract(self, file_path=None):
         """
         Main method to perform all work
-        :return:
+
+        extract step basically is the sequential call of two programs and
+        parsing of their results. Firstly we call gene prediction tool.
+        The output of this program is amino-acid sequence file and
+        nucleotide sequence file. then we call hmmsearch to identify
+        genes in amino-acid file.
+        In output json we put only these genes that are in config. Gene
+        data_structure consist of index, name, amino-acid seq and nuc seq
+        that code this gene.
+        All other meta information that we place in bcg can be ignored for now.
+
         """
         file_path = self._config['input_file'] if not file_path else file_path
         self._prodigal.run(file_path)

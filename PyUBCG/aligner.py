@@ -63,9 +63,11 @@ class Aligner:
 
     def run(self):
         """main method to process align step"""
+
         if not os.path.exists(self._extract_dir):
             raise ValueError('Extract folder not exist')
-        if len(os.listdir(self._extract_dir)) < 4:
+        #  here we change min number of genomes, in origin it was 4.
+        if len(os.listdir(self._extract_dir)) < 3:
             raise ValueError('To few bcg to align')
 
         replace_map = self._input_merge()
@@ -76,9 +78,12 @@ class Aligner:
 
     def _input_merge(self):
         """
-        Method to reconstruct fasta file like after prodigal output but
-        only with filtered genes.
-        :return:
+        Method to merger all amino-acid and nuc seq in two files that
+        contains all genes. This step should be refactored later since we can
+        omit it and process bcg in input_parse step.
+        Line containing Name of genome starts with `#` and name of gene
+        starts with `>`
+
         """
         check_label = {}
         replace_map = {}
@@ -87,24 +92,24 @@ class Aligner:
             with open(extracted_file) as bcg_file:
                 bcg = json.load(bcg_file)
             target_value = 'data', 'uid', 'label'
-            #  filter bcg to get only needed values
-            # data = {key: value for item in bcg for key, value in item.items()
-            #         if any(param in item for param in target_value)}
             data = {key: bcg[key] for key in target_value}
             #  like in original ubcg
             data['uid'] = 'zZ' + data['uid'] + 'zZ'
-            # this is copypast fro, origin probably to check if we have duplicate labels
+            #  this is copypast from origin probably to check if we have duplicate labels
             check_label[data['uid']] = check_label.get(data['uid'], 0) + 1
             if check_label[data['uid']] != 1:
                 data['label'] = data['label'] + '_' + check_label[data['uid']]
             data['label'] = data['label'].replace(' ', '_')
             replace_map[data['uid']] = data['label']
+            #  just makin path to folder with output of this method
             self._merged_input_nuc = os.path.join(
                 self._align_inputmerge_with_prefix,
-                self.config.prefixes.nuc_input + self.config.postfixes.nuc_input_const)
+                self.config.prefixes.nuc_input + self.config.postfixes.nuc_input_const
+            )
             self._merged_input_pro = os.path.join(
                 self._align_inputmerge_with_prefix,
-                self.config.prefixes.pro_input + self.config.postfixes.pro_input_const)
+                self.config.prefixes.pro_input + self.config.postfixes.pro_input_const
+            )
             with open(self._merged_input_nuc, 'a+') as nuc_file, \
                     open(self._merged_input_pro, 'a+') as pro_file:
                 nuc_file.write('#'+data['label']+'\n')
@@ -125,14 +130,17 @@ class Aligner:
     def _input_parsing(self):
         """
         Method to create fasta-like files to each gene from genomes.
-        :return:
+        Depend on mode we run program the output will differ.
+            `nt`: we will make files only with nucleotide seq from bcg
+            `aa|codon|codon12`: both
+
         """
 
         def read_pro_file():
             """
             Method to create map with gene_name:sequence from file with
             nucleotide
-            :return:
+
             """
             fasta_map_pro = {}
             genome_names_protein = []
@@ -154,7 +162,6 @@ class Aligner:
             """
             Method to create map with gene_name:sequence from file with
             nucleotide
-            :return:
             """
             fasta_map_nuc = {}
             genome_names = []
@@ -170,6 +177,7 @@ class Aligner:
                         #  stop codon
                         if (not seq.endswith('TAA') or not seq.endswith('TAG')
                                 or not seq.endswith('TGA')):
+                            #  this is probably required for the mafft
                             seq = seq + '---'
                         new_record = '>' + genome_name + '\n' + seq + '\n'
                         fasta_map_nuc[gene] = fasta_map_nuc.get(gene, '') + new_record
@@ -178,9 +186,6 @@ class Aligner:
         def write_file_from_map(map_data, postfix):
             """
             Write file for every core gene encountered in every genome
-            :param map_data:
-            :param postfix:
-            :return:
             """
             bcg_list = []
             for gene in map_data:
@@ -194,6 +199,8 @@ class Aligner:
 
         if self.config['align_mode'] == 'nt':
             LOGGER.info('prosess input parse, align mode %s', self.config.align_mode)
+            #  reading and writen only nuc seq files
+
             fasta_map_nuc, self._genome_name = read_nuc_file()
             self._bcg_list = write_file_from_map(
                 fasta_map_nuc, self.config.postfixes.input_parsing_dna_const)
@@ -202,13 +209,17 @@ class Aligner:
             LOGGER.info('prosess input parse, align mode %s', self.config.align_mode)
             fasta_map_pro, self._genome_name_pro = read_pro_file()
             fasta_map_nuc, self._genome_name = read_nuc_file()
-            # this check is copy-past from origin
+            #  this check is copy-past from origin. Not sure if it even
+            #  possible to get this error
             if len(fasta_map_nuc) != len(fasta_map_pro):
                 #  probably do something with recently created files here
                 raise ValueError('Error: The number of genomes for protein/nucleotide '
                                  'sequences are not identical.')
             if self.config.align_mode != 'aa':
+
                 #  this step is specific to codon and codon12 mode
+                #  since here is required both and amino acid and nuc
+                #  seq files
                 write_file_from_map(fasta_map_nuc, self.config.postfixes.input_parsing_dna_const)
             self._bcg_list = write_file_from_map(
                 fasta_map_pro, self.config.postfixes.input_parsing_pro_const)
@@ -216,10 +227,13 @@ class Aligner:
 
     def _align(self):
         """
-        Step to process multiple sequences alignment and run filter gap after it
-        :return:
+        Step to process multiple sequences alignment and run gap filtering
+        after it
         """
         def filter_genomes_by_frequency(postfix):
+            #  here we place gene names that satisfy out criteria that it
+            #  have to occur at least in 3 genomes since mafft can make
+            #  alignment min at 3 genomes.
             filtered_bcg = []
             bcg_num = 0
             for gene in self._bcg_list:
@@ -235,33 +249,121 @@ class Aligner:
                     #  TODO: use another tool to process pairwise gene alignment ?
                     #  https://en.wikipedia.org/wiki/List_of_sequence_alignment_software
                     LOGGER.info("Only three or fewer genomes have %s sequences."
-                                "This gene is excluded in further analysis.", bcg)
-                    # log about it here
+                                " This gene is excluded in further analysis.", bcg)
             return filtered_bcg, bcg_num
+
+        #  step 1 we filter genome by frequency
         if self.config.align_mode == 'nt':
+            #  we make alignment on nuc seq and pass it to tree builder
+            #
             self._bcg_filtered_in_align, self._bcg_num = filter_genomes_by_frequency(
                 self.config.postfixes.input_parsing_dna_const)
         else:
             self._bcg_filtered_in_align, self._bcg_num = filter_genomes_by_frequency(
                 self.config.postfixes.input_parsing_pro_const)
+
+        #  step 2 we make alignment and process gap filtering.
+        #  Gaps = `-` symbols in sequence we get after alignment.
+
         for gene in self._bcg_filtered_in_align:
+            #  make alignment for every gene
             LOGGER.info('Process alignment for %s', gene)
             self._genes_processed_with_mafft.append(self._mafft.run(gene))
+
         if self.config.align_mode in ('nt', 'aa'):
+        #  in nt and aa mode we use only pro for nt and nuc seq for aa mode
             for gene in self._genes_processed_with_mafft:
                 LOGGER.info('Run gap fileting for %s', gene)
                 self._filtering_gap_dna(gene)
+
         elif self.config.align_mode in ('codon', 'codon12'):
+            #  codon-based alignment (output is nucleotide sequences, but alignment is carried out using amino acid sequences).
+            #  codon12 same but been used 1 and 2 nucleotides from codon.
             for gene in self._genes_processed_with_mafft:
                 LOGGER.info('Run gap fileting for %s', gene)
                 dna_file, gene = self._filtering_gap_pro(gene)
                 self._filtering_gap_dna((dna_file, gene))
 
 
+    def _filtering_gap_pro(self, data: tuple):
+        """
+        Method to process gap filtering for protein sequences after mafft
+        :param data: tuple with path to sequence produced with mafft and gene name
+        """
+        aligned_file = data[0]
+        gene = data[1]
+        dna_file = os.path.join(self._align_inputparse_with_prefix,
+                                gene + self.config.postfixes.input_parsing_dna_const)
+        LOGGER.info('Filter gaps for %s gene, aligned file %s, dna file %s',
+                    gene, aligned_file, dna_file)
+        fasta_dna_list = FastaSeqList(dna_file)
+        aligned_protein = FastaSeqList(aligned_file)
+        for fasta_seq in aligned_protein.get_seq_list():
+            dna_fasta_seq = fasta_dna_list.seq_list[fasta_seq.title]
+            aligned_seq = fasta_seq.seq
+            dna_seq = dna_fasta_seq.seq
+            for nuc_idx, nuc in enumerate(aligned_seq):
+                if nuc == '-':
+                    # TODO: Why x3 ?
+                    insert_pos = 3 * nuc_idx
+                    dna_seq = dna_seq[:insert_pos]+'---'+dna_seq[insert_pos:]
+            #  specific to codon12 mode
+            if self.config.align_mode == 'codon12':
+                codon12 = ''
+                for nuc_idx, nuc in enumerate(dna_seq):
+                    if nuc_idx % 3 != 2:
+                        codon12 += nuc
+                dna_fasta_seq.seq = codon12
+            else:
+                dna_fasta_seq.seq = dna_seq
+        file_path = os.path.join(
+            self._align_align_with_prefix,
+            gene+self.config.postfixes.align_align_const)
+        fasta_dna_list.write_file(file_path)
+        return file_path, gene
+
+
+    def _filtering_gap_dna(self, data):
+        """
+        Method to process gap filtering for dna sequences after mafft
+        """
+        aligned_file = data[0]
+        gene = data[1]
+        con_fasta_seq_list = FastaSeqList(aligned_file)
+        # TODO: check if file not exist ?
+        num_of_genes = con_fasta_seq_list.get_seq_list_len()
+        LOGGER.info('Filter gaps for %s gene, aligned file %s', gene, aligned_file)
+        seq_len = con_fasta_seq_list.get_seq_len()
+        num_gaps = [0] * seq_len
+        for fasta_seq in con_fasta_seq_list.get_seq_list():
+            seq = fasta_seq.seq
+            for nuc_idx, nuc in enumerate(seq):
+                if nuc == '-':
+                    num_gaps[nuc_idx] += 1
+        for fasta_seq in con_fasta_seq_list.get_seq_list():
+            seq = fasta_seq.seq
+            temp_seq = ''
+            for nuc_idx, nuc in enumerate(seq):
+                #  filtering cutoff for gap-containing positions see doc for values
+                if num_gaps[nuc_idx] <= num_of_genes * (1 - (self.config.filter / 100)):
+                    temp_seq += nuc
+            fasta_seq.seq = temp_seq
+        #
+        output_path = os.path.join(self._align_filtering_output_with_prefix,
+                                   gene+self.config.postfixes.align_align_const)
+        con_fasta_seq_list.write_file(output_path)
+
+
     def _concatenating(self):
         """
-        Method to concatenate aligned sequences
-        :return:
+        Method to concatenate aligned sequences. Output is fasta file in format:
+
+        `> genome name
+        seq of concatenated genes passed all above filtering
+        > genome name
+        ...`
+
+        Also method produce same file but for every genome separately.
         """
         LOGGER.info("Concatenating aligned UBCGs.")
         concatenated_fasta = []
@@ -305,74 +407,3 @@ class Aligner:
                     ouf.write(line)
         with open(output_file, 'w') as f:
             f.write(''.join(concatenated_fasta))
-
-
-    def _filtering_gap_pro(self, data: tuple):
-        """
-        Method to process gap filtering for protein sequences after mafft
-        :param data: tuple with path to sequence produced with mafft and gene name
-        :return:
-        """
-        aligned_file = data[0]
-        gene = data[1]
-        dna_file = os.path.join(self._align_inputparse_with_prefix,
-                                gene + self.config.postfixes.input_parsing_dna_const)
-        LOGGER.info('Filter gaps for %s gene, aligned file %s, dna file %s',
-                    gene, aligned_file, dna_file)
-        fasta_dna_list = FastaSeqList(dna_file)
-        aligned_protein = FastaSeqList(aligned_file)
-        for fasta_seq in aligned_protein.get_seq_list():
-            dna_fasta_seq = fasta_dna_list.seq_list[fasta_seq.title]
-            aligned_seq = fasta_seq.seq
-            dna_seq = dna_fasta_seq.seq
-            for nuc_idx, nuc in enumerate(aligned_seq):
-                if nuc == '-':
-                    # TODO: Why x3 ?
-                    insert_pos = 3 * nuc_idx
-                    dna_seq = dna_seq[:insert_pos] + '---' + dna_seq[insert_pos:]
-            #  specific to codon12 mode
-            if self.config.align_mode == 'codon12':
-                codon12 = ''
-                for nuc_idx, nuc in enumerate(dna_seq):
-                    if nuc_idx % 3 != 2:
-                        codon12 += nuc
-                dna_fasta_seq.seq = codon12
-            else:
-                dna_fasta_seq.seq = dna_seq
-        file_path = os.path.join(
-            self._align_align_with_prefix,
-            gene+self.config.postfixes.align_align_const)
-        fasta_dna_list.write_file(file_path)
-        return file_path, gene
-
-
-    def _filtering_gap_dna(self, data):
-        """
-        Method to process gap filtering for dna sequences after mafft
-        :param file_path:
-        :return:
-        """
-        aligned_file = data[0]
-        gene = data[1]
-        con_fasta_seq_list = FastaSeqList(aligned_file)
-        # TODO: check if file not exist ?
-        num_of_genes = con_fasta_seq_list.get_seq_list_len()
-        LOGGER.info('Filter gaps for %s gene, aligned file %s', gene, aligned_file)
-        seq_len = con_fasta_seq_list.get_seq_len()
-        num_gaps = [0] * seq_len
-        for fasta_seq in con_fasta_seq_list.get_seq_list():
-            seq = fasta_seq.seq
-            for nuc_idx, nuc in enumerate(seq):
-                if nuc == '-':
-                    num_gaps[nuc_idx] += 1
-        for fasta_seq in con_fasta_seq_list.get_seq_list():
-            seq = fasta_seq.seq
-            temp_seq = ''
-            for nuc_idx, nuc in enumerate(seq):
-                if num_gaps[nuc_idx] <= num_of_genes * (1 - (self.config.filter / 100)):
-                    temp_seq += nuc
-            fasta_seq.seq = temp_seq
-        # Aligner, line 1116
-        output_path = os.path.join(self._align_filtering_output_with_prefix,
-                                   gene+self.config.postfixes.align_align_const)
-        con_fasta_seq_list.write_file(output_path)
