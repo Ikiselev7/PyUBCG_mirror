@@ -13,6 +13,8 @@ import shutil
 import logging.config
 import click
 
+
+
 from PyUBCG.abc import AbstractProdigal, AbstractHmmsearch, \
     AbstractConfigLoader, AbstractMafft
 from PyUBCG.aligner import Aligner
@@ -195,6 +197,10 @@ class Main:
             LOGGER.info("Processing: %s", fasta)
             name = fasta.split('/')[-1].rsplit('.', 1)[0]
             self._config.label = name
+            os.rename(os.path.join(self._dirpath, self._config.paths.fasta_input_folder, fasta),
+                      os.path.join(self._dirpath, self._config.paths.fasta_input_folder, fasta.replace(' ', '_')))
+            fasta = fasta.replace(' ', '_')
+
             self.extract(fasta)
 
 

@@ -43,9 +43,11 @@ class Transdecoder(AbstractProdigal):
         :return:
         """
         cli = docker.from_env()
+        file_name = file_name.replace(' ', '_')
         tmp_folder = self._input_path +'/' + file_name + '_tmp_dir'
-        os.mkdir(tmp_folder)
-        shutil.copyfile(self._input_path +'/' + file_name, tmp_folder)
+        if not os.path.exists(tmp_folder):
+            os.mkdir(tmp_folder)
+        shutil.copyfile(self._input_path +'/' + file_name, tmp_folder +'/' + file_name)
         volume = {tmp_folder: {'bind': '/run_dir', 'mode': 'rw'}}
         command = ['TransDecoder.LongOrfs', '-t', file_name]
         cli.containers.run('comics/transdecoder', volumes=volume, working_dir='/run_dir', command=command, auto_remove=True)

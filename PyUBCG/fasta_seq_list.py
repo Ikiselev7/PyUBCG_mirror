@@ -70,6 +70,7 @@ class FastaSeqList:
         """
         return len(list(self.seq_list.values())[0].seq)
 
+
     def add_seq(self, title, seq):
         """
         Method to create FastaSeq instance and add int to object map
@@ -83,13 +84,13 @@ class FastaSeqList:
         self.seq_list[title] = fasta_seq
 
 
-
     def get_seq_list(self):
         """
         Method to get list of instances inside obj map
         :return:
         """
         return list(self.seq_list.values())
+
 
     def write_file(self, path):
         """
