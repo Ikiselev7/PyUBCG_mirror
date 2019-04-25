@@ -1,0 +1,57 @@
+FROM python:3.6.7
+
+RUN apt update -y
+RUN apt upgrade -y
+RUN apt-get install -y build-essential  git wget unzip jq vim
+RUN git clone https://github.com/stamatak/standard-RAxML.git && cd standard-RAxML \
+    && make -f Makefile.gcc && rm *.o && make -f Makefile.SSE3.gcc && rm *.o \
+    && make -f Makefile.PTHREADS.gcc && rm *.o && make -f Makefile.SSE3.PTHREADS.gcc \
+    && cp raxmlHPC* /usr/bin/
+RUN apt install -y hmmer
+RUN git clone https://github.com/hyattpd/Prodigal.git && cd Prodigal && make install
+RUN wget -P /UBCG http://www.microbesonline.org/fasttree/FastTree.c && cd /UBCG && \
+    gcc -DNO_SSE -O3 -finline-functions -funroll-loops -Wall -o FastTree FastTree.c -lm && mv FastTree /usr/local/bin && rm FastTree.c
+RUN wget https://mafft.cbrc.jp/alignment/software/mafft_7.407-1_amd64.deb && dpkg -i mafft_7.407-1_amd64.deb
+RUN apt-get update -q -y && \
+     apt-get install -y python3-dev python3-setuptools && \
+     pip3 install virtualenv
+WORKDIR /PyUBCG
+
+COPY ./setup.py /PyUBCG
+COPY ./Makefile /PyUBCG
+COPY ./requirements.txt /PyUBCG
+
+RUN make install_dep
+
+COPY . /PyUBCG
+
+# example of run extract command
+
+#RUN .venv/bin/python -m PyUBCG extract -i CP012646_s_GCA_001281025.1_KCOM_1350.fasta --label "CP012646_s KCOM 1350" --accession "GCA_001281025.1" --taxon "CP012646_s" --strain "KCOM 1350" && \
+#    \
+#    .venv/bin/python -m PyUBCG extract -i Streptococcus_constellatus_subsp._constellatus_GCA_000474075.1_SK53_TYPE.fasta --label "Streptococcus constellatus subsp. constellatus SK53(T)" --accession "GCA_000474075.1" --taxon "Streptococcus constellatus subsp. constellatus" --strain "SK53" --type  && \
+#    \
+#    .venv/bin/python -m PyUBCG extract -i Streptococcus_constellatus_subsp._pharyngis_GCA_000223295.2_SK1060_TYPE.fasta --label "Streptococcus constellatus subsp. pharyngis SK1060(T)" --accession "GCA_000223295.2" --taxon "Streptococcus constellatus subsp. pharyngis" --strain "SK1060" --type && \
+#    \
+#    .venv/bin/python -m PyUBCG extract -i CP014326_s_GCA_001560895.1_SVGS_061.fasta --label "CP014326_s SVGS_061" --accession "GCA_001560895.1" --taxon "CP014326_s" --strain "SVGS_061" && \
+#    \
+#    .venv/bin/python -m PyUBCG extract -i Streptococcus_mitis_GCA_002014755.1_CCUG_31611_TYPE.fasta --label "Streptococcus mitis CCUG 31611(T)" --accession "GCA_002014755.1" --taxon "Streptococcus mitis" --strain "CCUG 31611" --type && \
+#    \
+#    .venv/bin/python -m PyUBCG extract -i Streptococcus_pneumoniae_GCA_001457635.1_NCTC_7465_TYPE.fasta --label "Streptococcus pneumoniae NCTC 7465(T)" --accession "GCA_001457635.1" --taxon "Streptococcus pneumoniae" --strain "NCTC 7465" --type && \
+#     \
+#    .venv/bin/python -m PyUBCG extract -i Streptococcus_pseudopneumoniae_GCA_002087075.1_CCUG_49455_TYPE.fasta --label "Streptococcus pseudopneumoniae CCUG 49455(T)" --accession "GCA_002087075.1" --taxon "Streptococcus pseudopneumoniae" --strain "CCUG 49455" --type && \
+#    \
+#    .venv/bin/python -m PyUBCG extract -i Streptococcus_pneumoniae_GCA_000006885.1_TIGR4.fasta --label "Streptococcus pneumoniae TIGR4" --accession "GCA_000006885.1" --taxon "Streptococcus pneumoniae" --strain "TIGR4"
+
+
+#RUN .venv/bin/python -m PyUBCG --help
+RUN .venv/bin/python -m PyUBCG multiple-extract -i fasta_input
+
+RUN .venv/bin/python -m PyUBCG align --bcg_dir extract_output -a codon --align_prefix test_codon --draw
+RUN .venv/bin/python -m PyUBCG align --bcg_dir extract_output -a codon12 --align_prefix test_codon12 --draw
+RUN .venv/bin/python -m PyUBCG align --bcg_dir extract_output -a aa --align_prefix test_aa --draw
+RUN .venv/bin/python -m PyUBCG align --bcg_dir extract_output -a nt --align_prefix test_nt --draw
+
+
+#RUN .venv/bin/pylint PyUBCG/
+#RUN .venv/bin/pytest

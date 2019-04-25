@@ -234,6 +234,12 @@ def cli():
 def extract(**kwargs):
     """
     Converting genome assemblies or contigs (fasta) to bcg files
+
+    before run if it's first run else omit:
+        make install_dep
+    run:
+        .venv/bin/python -m PyUBCG extract -i Streptococcus_pneumoniae_GCA_000006885.1_TIGR4.fasta --label "Streptococcus pneumoniae TIGR4" --accession "GCA_000006885.1" --taxon "Streptococcus pneumoniae" --strain "TIGR4"
+
     """
     app = Main(**kwargs, command='extract')
     app.extract()
@@ -249,6 +255,10 @@ def extract(**kwargs):
 def multiple_extract(**kwargs):
     """
     Converting genomes assemblies or contigs (fasta) to bcg files in given folder.
+    before run if it's first run else omit:
+        make install_dep
+    run:
+        .venv/bin/python -m PyUBCG multiple-extract -i fasta_input
     """
     app = Main(**kwargs, command='extract')
     app.multiple_extract()
@@ -290,6 +300,10 @@ codon12: same as “codon” option but only 1st and 2nd nucleotides of a codon 
 def align(**kwargs):
     """
         Generating multiple alignments from bcg files
+    before run if it's first run else omit:
+        make install_dep
+    run:
+        .venv/bin/python -m PyUBCG multiple-extract -i fasta_input
     """
 
     app = Main(**kwargs, command='align')

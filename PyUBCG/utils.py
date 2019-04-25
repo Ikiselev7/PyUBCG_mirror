@@ -28,7 +28,6 @@ def read_config_from_path(config):
         return None
     return read_config(filepath)
 
-
 class AttrDict(dict):
     """ Dictionary subclass whose entries can be accessed by attributes
         (as well as normally).
