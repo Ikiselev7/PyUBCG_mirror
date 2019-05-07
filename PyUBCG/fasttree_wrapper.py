@@ -27,10 +27,8 @@ class FastTree(AbstractFastTree):
         args = ['FastTree', '-quiet'] + kwargs['tree_args'] + [file_name]
         proc = Popen(args, stdout=PIPE, stderr=PIPE, universal_newlines=True)
         proc_out, proc_err = proc.communicate()
-        if proc_err == '':
-            with open(kwargs['output_file'], 'w') as out:
-                for line in proc_out:
-                    out.write(line)
-        else:
-            LOGGER.error(proc_err)
-            raise ValueError(f'Invalid args for FastTree,\n\t{proc_err}')
+        with open(kwargs['output_file'], 'w') as out:
+            for line in proc_out:
+                out.write(line)
+        if proc_err != '':
+            LOGGER.warning(proc_err)

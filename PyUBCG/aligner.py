@@ -168,8 +168,7 @@ class Aligner:
                     else:
                         seq = line.strip()
                         #  stop codon
-                        if (not seq.endswith('TAA') or not seq.endswith('TAG')
-                                or not seq.endswith('TGA')):
+                        if not (seq.endswith('TAA') or seq.endswith('TAG') or seq.endswith('TGA')):
                             seq = seq + '---'
                         new_record = '>' + genome_name + '\n' + seq + '\n'
                         fasta_map_nuc[gene] = fasta_map_nuc.get(gene, '') + new_record
