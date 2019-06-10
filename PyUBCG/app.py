@@ -211,7 +211,7 @@ class Main:
 #pylint disable: line-too-long
 @click.group(help='PyUBCG - python implementation of UBCG pipeline https://www.ezbiocloud.net/tools/ubcg')
 def cli():
-    """entry point"""
+    """entry point for pyubcg"""
 
 @cli.command()
 @click.option('-i', '--input_file', required=True, help='Path to fasta file to be extracted')
