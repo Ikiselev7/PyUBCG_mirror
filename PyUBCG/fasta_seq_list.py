@@ -10,15 +10,16 @@ from PyUBCG.fasta_seq import FastaSeq
 
 LOGGER = logging.getLogger('PyUBCG.FastaSeqList')
 
+
 class FastaSeqList:
     """
     Class to hold all single fasta records
     """
+
     def __init__(self, file_name):
         self.seq_list = {}
         self.file_name = file_name
         self.parse_file()
-
 
     def get_seq_list_len(self) -> int:
         """
@@ -26,7 +27,6 @@ class FastaSeqList:
         :return:
         """
         return len(self.seq_list)
-
 
     def parse_file(self):
         """
@@ -70,7 +70,6 @@ class FastaSeqList:
         """
         return len(list(self.seq_list.values())[0].seq)
 
-
     def add_seq(self, title, seq):
         """
         Method to create FastaSeq instance and add int to object map
@@ -83,14 +82,12 @@ class FastaSeqList:
         fasta_seq = FastaSeq(title, seq, 1)
         self.seq_list[title] = fasta_seq
 
-
     def get_seq_list(self):
         """
         Method to get list of instances inside obj map
         :return:
         """
         return list(self.seq_list.values())
-
 
     def write_file(self, path):
         """
@@ -102,8 +99,7 @@ class FastaSeqList:
             for seq in self.seq_list:
                 title = self.seq_list[seq].title
                 seq = self.seq_list[seq].seq
-                file.write('>' + title + '\n' + seq+ '\n')
-
+                file.write('>' + title + '\n' + seq + '\n')
 
     def __getattr__(self, item):
         return self.seq_list[item]

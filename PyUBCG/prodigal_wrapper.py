@@ -5,18 +5,20 @@
 
 """
 
-import subprocess
 import logging
 import os
+import subprocess
 
 from PyUBCG.abc import AbstractProdigal
 
 LOGGER = logging.getLogger('PyUBCG.ProdigalWrapper')
 
+
 class Prodigal(AbstractProdigal):
     """
         Class-wrapper to run prodigal
     """
+
     def __init__(self, config):
         self._config = config
         self._dirpath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -31,7 +33,6 @@ class Prodigal(AbstractProdigal):
                                              config['prefixes']['nuc_prefix']
                                              ))
         self._translation_table = config['biological']['prodigal_translation_table']
-
 
     def run(self, file_name: str, *args, **kwargs) -> None:
         """

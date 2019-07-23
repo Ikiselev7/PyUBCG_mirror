@@ -5,9 +5,9 @@
 
 """
 
-from subprocess import Popen, PIPE
 import logging
 import os
+from subprocess import Popen, PIPE
 
 from PyUBCG.abc import AbstractMafft
 
@@ -18,6 +18,7 @@ class Mafft(AbstractMafft):
     """
         Class-wrapper to run Mafft
     """
+
     def __init__(self, config):
         self._config = config
         self._dirpath = \
@@ -39,18 +40,17 @@ class Mafft(AbstractMafft):
             self._input_postfix = self._config.postfixes.input_parsing_pro_const
             self._output_postfix = self._config.postfixes.mafft_res_dna_const
 
-
     def run(self, gene_name: str, *args, **kwargs) -> tuple:
         """
         Method to execute Mafft program.
         Accept
-        :param file_name: input fasta file for Mafft
+        :param gene_name: input fasta file for Mafft
         :return:
         """
         input_file = os.path.join(self._input_folder,
                                   gene_name + self._input_postfix)
         output_file = os.path.join(self._output_folder,
-                                   gene_name+self._output_postfix)
+                                   gene_name + self._output_postfix)
         LOGGER.info('Process %s gene with Mafft. %s output file', gene_name, output_file)
         args = ['mafft', '--quiet', '--thread', str(self._config.general.processes),
                 input_file]

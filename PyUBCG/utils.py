@@ -1,8 +1,7 @@
 """Module with utils"""
 
-import os
 import logging
-
+import os
 from trafaret_config import ConfigError, read_and_validate
 
 from PyUBCG.validators import CONFIG_SCHEMA
@@ -19,6 +18,7 @@ def read_config(filepath):
         ex.output()
         raise
 
+
 def read_config_from_path(config):
     """Read config from a file path in"""
     dirpath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -33,6 +33,7 @@ class AttrDict(dict):
     """ Dictionary subclass whose entries can be accessed by attributes
         (as well as normally).
     """
+
     def __init__(self, *args, **kwargs):
         super(AttrDict, self).__init__(*args, **kwargs)
         self.__dict__ = self

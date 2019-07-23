@@ -5,9 +5,8 @@
 
 """
 
-from subprocess import Popen, PIPE
 import logging
-
+from subprocess import Popen, PIPE
 
 from PyUBCG.abc import AbstractFastTree
 
@@ -18,6 +17,7 @@ class FastTree(AbstractFastTree):
     """
         Class-wrapper to run FastTree
     """
+
     def __init__(self, config):
         self._config = config
 

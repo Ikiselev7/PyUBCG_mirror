@@ -1,33 +1,33 @@
 # -*- coding: utf-8 -*-
 
-import pytest
 import json
+import pytest
+
 from PyUBCG.bcg_dto import BcgDto, BcgGenData, BcgDtoEncoder
 
 # test empty
 input_1 = ("1550089557386", "CP012646_s KCOM 1350", "GCA_001281025.1",
            "CP012646_s", None, "KCOM 1350", None, None, None, 92, "v3.0", 92,
-           92, 0,[
-           BcgGenData("rpmC", 0, {}),
-           BcgGenData("recA", 0, {})])
+           92, 0, [
+               BcgGenData("rpmC", 0, {}),
+               BcgGenData("recA", 0, {})])
 expected_1 = 'tests/bcg_files/1-test.json'
 
 # test with data
 input_2 = ("1550089557386", "CP012646_s KCOM 1350", "GCA_001281025.1",
            "CP012646_s", None, "KCOM 1350", None, None, None, 92, "v3.0", 92,
            92, 0, [
-           BcgGenData("recA", 1, 582, "ACTCTTGACCTAGGCGATGAGC",
-                      "LDLGDELEIEIEEGCGATGAGC", "8.3E-162"),
-           BcgGenData("rpmC", 4, 522, "ATGAAACTTAATGAAGTAAAAG",
-                      "MKLNEVKEFVKELRGLSQEELA", "2.4E-24",),
-           BcgGenData("rpmC", 4, 522, "ATGAAACTTAATGAAGTAAAAG",
-                      "MKLNEVKEFVKELRGLSQEELA", "2.4E-24", ),
-           BcgGenData("rpmC", 4, 522, "ATGAAACTTAATGAAGTAAAAG",
-                      "MKLNEVKEFVKELRGLSQEELA", "2.4E-24",),
-           BcgGenData("rpmC", 4, 522, "ATGAAACTTAATGAAGTAAAAG",
-                      "MKLNEVKEFVKELRGLSQEELA", "2.4E-24",)])
+               BcgGenData("recA", 1, 582, "ACTCTTGACCTAGGCGATGAGC",
+                          "LDLGDELEIEIEEGCGATGAGC", "8.3E-162"),
+               BcgGenData("rpmC", 4, 522, "ATGAAACTTAATGAAGTAAAAG",
+                          "MKLNEVKEFVKELRGLSQEELA", "2.4E-24", ),
+               BcgGenData("rpmC", 4, 522, "ATGAAACTTAATGAAGTAAAAG",
+                          "MKLNEVKEFVKELRGLSQEELA", "2.4E-24", ),
+               BcgGenData("rpmC", 4, 522, "ATGAAACTTAATGAAGTAAAAG",
+                          "MKLNEVKEFVKELRGLSQEELA", "2.4E-24", ),
+               BcgGenData("rpmC", 4, 522, "ATGAAACTTAATGAAGTAAAAG",
+                          "MKLNEVKEFVKELRGLSQEELA", "2.4E-24", )])
 expected_2 = 'tests/bcg_files/2-test.json'
-
 
 
 @pytest.mark.parametrize('uid,label,accession,taxon_name,ncbi_name,strain_name,\

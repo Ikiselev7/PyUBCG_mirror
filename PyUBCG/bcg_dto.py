@@ -11,6 +11,7 @@ class BcgDtoEncoder(json.JSONEncoder):
     """
     Encoder class for BcgDto
     """
+
     def default(self, o):  # pylint: disable=E0202
         if isinstance(o, _BcgGenDataStruct):
             return {o.name: [o.n_genes, o.genes]}
@@ -34,6 +35,7 @@ class BcgDto():  # pylint: disable=R0902
     """
     Class to store all metadata from bcg json file
     """
+
     def __init__(self, uid, label, accession,  # pylint: disable=R0913, R0914,
                  taxon_name, ncbi_name, strain_name, strain_type,
                  strain_property, taxonomy, UBCG_target_gene_number, version,
@@ -60,6 +62,7 @@ class _BcgGenDataStruct:
     """
     Class to store gene metadata from bcg json file
     """
+
     def __init__(self):
         self.name = "gene_name"
         self.n_genes = "n_genes"
@@ -70,7 +73,8 @@ class BcgGenData:
     """
     Class to store gene data from bcg json file
     """
-    def __init__(self, name, n_genes, index=None, dna=None, protein=None, # pylint: disable=R0913, R0914
+
+    def __init__(self, name, n_genes, index=None, dna=None, protein=None,  # pylint: disable=R0913, R0914
                  evalue=None):
         self.name = name
         self.n_genes = n_genes
@@ -86,6 +90,7 @@ class _BcgGenDataWrapper:
     """
     Class-wrapper for BcgGenDataStruct and BcgGenData classes
     """
+
     def __init__(self, args):
         self.genes_list = {gene.name: gene for gene in args}
 

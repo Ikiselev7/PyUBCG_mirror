@@ -7,8 +7,9 @@
 
 class FastaSeq:
     """
-    Object to hold fasta file fata
+    Object to hold fasta file data
     """
+
     def __init__(self, title, seq, number_added_seq):
         self.title = title
         self.seq = seq

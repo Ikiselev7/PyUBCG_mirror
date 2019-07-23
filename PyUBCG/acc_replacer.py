@@ -43,7 +43,7 @@ class ReplaceAcc:
 
     def replace(self, ori_str, is_newick=False):
         """
-        Method to replace labels
+        Method replaces labels
         :param ori_str: file string
         :param is_newick: file format
         :return: string
@@ -52,7 +52,7 @@ class ReplaceAcc:
         for acc in range(len(self._acc_list)):
             if is_newick:
                 label = self._label_list[acc].replace("'", "`")
-                res = res_str.replace(self._flag+self._acc_list[acc]+self._flag, "'"+label+"'")
+                res = res_str.replace(self._flag + self._acc_list[acc] + self._flag, "'" + label + "'")
             else:
-                res = res_str.replace(self._flag+self._acc_list[acc]+self._flag, self._label_list[acc])
+                res = res_str.replace(self._flag + self._acc_list[acc] + self._flag, self._label_list[acc])
         return res

@@ -3,20 +3,23 @@
     ACB wrapper to hmmsearch-like program
 
 """
+import logging
 import os
 import subprocess
-import logging
 
-#pylint: disable=cyclic-import
+# pylint: disable=cyclic-import
 from PyUBCG.abc import AbstractHmmsearch
-#pylint: enable=cyclic-import
+
+# pylint: enable=cyclic-import
 
 LOGGER = logging.getLogger('PyUBCG.hmm_wrapper')
+
 
 class Hmmsearch(AbstractHmmsearch):
     """
     Wrapper to hmmsearch
     """
+
     def __init__(self, config):
         self.config = config
         self._dirpath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -37,6 +40,6 @@ class Hmmsearch(AbstractHmmsearch):
         LOGGER.info('Process %s file with hmmsearch.', file_name)
         process = subprocess.Popen(
             ['hmmsearch', '--noali', '--cut_tc', '-o',
-             os.path.join(self._output_folder, file_name+'.out'), self._hmm_base,
+             os.path.join(self._output_folder, file_name + '.out'), self._hmm_base,
              os.path.join(self._input_path, file_name)])
         process.wait()

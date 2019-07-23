@@ -176,7 +176,7 @@ class Main:
 
     def align(self):
         """
-        Method to perform alignment and tree building. Method consume
+        Method to perform alignment and tree building. Method consumes
         bcg created in extract step
         """
         # replace map is map with meta info in order later
@@ -189,9 +189,9 @@ class Main:
 
     def multiple_extract(self):
         """
-        method to process extract step on every files in input folder
+        Method to process extract step on each file in input folder.
         We assume that name of the file is sufficient for later identifying
-        and use it as label later.
+        and using it as a label later.
         """
         fastas = os.listdir(os.path.join(self._dirpath,
                                          self._config.paths.fasta_input_folder))

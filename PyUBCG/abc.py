@@ -4,15 +4,16 @@
 
 """
 
-import abc
 import logging
 import shutil
 
+import abc
 
 SUPPORTED_CONFIG_FORMATS = ['yaml']
 LOGGER = logging.getLogger('PyUBCG.abc')
 
 DOCKERIZED_PROGRAMS = ['transdecoder']
+
 
 class AbstractConfigLoader(abc.ABC):
     """
@@ -49,8 +50,8 @@ class AbstractConfigLoader(abc.ABC):
         """return config dict"""
         return self.config
 
-class AbstractUtilWrapper(abc.ABC):
 
+class AbstractUtilWrapper(abc.ABC):
     """
     ABC class to implement wrapper class to program
     """
@@ -132,12 +133,13 @@ class AbstractMafft(AbstractUtilWrapper):
     Mafft wrapper class to create multiple sequence alignments
     of amino acid or nucleotide sequences
     """
+
     def __new__(cls, config):
         tool_type = config['tools']['mafft_like_tool']
         if tool_type == 'mafft':
-            #pylint: disable=cyclic-import
+            # pylint: disable=cyclic-import
             from PyUBCG.mafft_wrapper import Mafft
-            #pylint: enable=cyclic-import
+            # pylint: enable=cyclic-import
             _impl = Mafft
         else:
             LOGGER.error('Incorrect mafft_like_tool in config')
@@ -153,12 +155,13 @@ class AbstractFastTree(AbstractUtilWrapper):
     """
     Wrapper class to build tree with FastTree
     """
+
     def __new__(cls, config):
         tool_type = config.tools.align_tool
         if tool_type == 'FastTree':
-            #pylint: disable=cyclic-import
+            # pylint: disable=cyclic-import
             from PyUBCG.fasttree_wrapper import FastTree
-            #pylint: enable=cyclic-import
+            # pylint: enable=cyclic-import
             _impl = FastTree
         else:
             LOGGER.error('Incorrect align_tool in config')

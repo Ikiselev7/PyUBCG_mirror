@@ -5,14 +5,12 @@
 """
 
 import glob
-import os
 import json
 import logging
+import os
 
-
-from PyUBCG.fasta_seq_list import FastaSeqList
 from PyUBCG.abc import AbstractMafft
-
+from PyUBCG.fasta_seq_list import FastaSeqList
 
 LOGGER = logging.getLogger('PyUBCG.aligner')
 
@@ -88,20 +86,20 @@ class Aligner:
         check_label = {}
         replace_map = {}
 
-        for extracted_file in glob.glob(self._extract_dir+'/*'):
+        for extracted_file in glob.glob(self._extract_dir + '/*'):
             with open(extracted_file) as bcg_file:
                 bcg = json.load(bcg_file)
             target_value = 'data', 'uid', 'label'
             data = {key: bcg[key] for key in target_value}
             #  like in original ubcg
             data['uid'] = 'zZ' + data['uid'] + 'zZ'
-            #  this is copypast from origin probably to check if we have duplicate labels
+            #  this is copy-paste from origin probably to check if we have duplicate labels
             check_label[data['uid']] = check_label.get(data['uid'], 0) + 1
             if check_label[data['uid']] != 1:
                 data['label'] = data['label'] + '_' + check_label[data['uid']]
             data['label'] = data['label'].replace(' ', '_')
             replace_map[data['uid']] = data['label']
-            #  just makin path to folder with output of this method
+            #  just making path to folder with output of this method
             self._merged_input_nuc = os.path.join(
                 self._align_inputmerge_with_prefix,
                 self.config.prefixes.nuc_input + self.config.postfixes.nuc_input_const
@@ -112,20 +110,19 @@ class Aligner:
             )
             with open(self._merged_input_nuc, 'a+') as nuc_file, \
                     open(self._merged_input_pro, 'a+') as pro_file:
-                nuc_file.write('#'+data['label']+'\n')
-                pro_file.write('#'+data['label']+'\n')
+                nuc_file.write('#' + data['label'] + '\n')
+                pro_file.write('#' + data['label'] + '\n')
                 for gene in data['data']:
                     #  in origin they collect all UBCG in bcg, even if
                     #  genome does not have them, this check is to server original bcg
                     if data['data'][gene][0] != 0:
-                        nuc_file.write('>'+gene+'\n')
-                        pro_file.write('>'+gene+'\n')
-                        nuc_file.write(data['data'][gene][1]['nuc_sequence']+'\n')
-                        pro_file.write(data['data'][gene][1]['pro_sequence']+'\n')
+                        nuc_file.write('>' + gene + '\n')
+                        pro_file.write('>' + gene + '\n')
+                        nuc_file.write(data['data'][gene][1]['nuc_sequence'] + '\n')
+                        pro_file.write(data['data'][gene][1]['pro_sequence'] + '\n')
             LOGGER.info('Wrote merged nucleotide file %s', self._merged_input_nuc)
             LOGGER.info('Wrote merged protein file %s', self._merged_input_pro)
         return replace_map
-
 
     def _input_parsing(self):
         """
@@ -133,7 +130,6 @@ class Aligner:
         Depend on mode we run program the output will differ.
             `nt`: we will make files only with nucleotide seq from bcg
             `aa|codon|codon12`: both
-
         """
 
         def read_pro_file():
@@ -156,7 +152,6 @@ class Aligner:
                         new_record = '>' + genome_name + '\n' + seq_pro + '\n'
                         fasta_map_pro[gene] = fasta_map_pro.get(gene, '') + new_record
             return fasta_map_pro, genome_names_protein
-
 
         def read_nuc_file():
             """
@@ -190,7 +185,7 @@ class Aligner:
             bcg_list = []
             for gene in map_data:
                 bcg_list.append(gene)
-                file_path = os.path.join(self._align_inputparse_with_prefix, gene+postfix)
+                file_path = os.path.join(self._align_inputparse_with_prefix, gene + postfix)
                 with open(file_path, 'w') as gene_file:
                     gene_file.write(map_data[gene])
 
@@ -209,14 +204,13 @@ class Aligner:
             LOGGER.info('prosess input parse, align mode %s', self.config.align_mode)
             fasta_map_pro, self._genome_name_pro = read_pro_file()
             fasta_map_nuc, self._genome_name = read_nuc_file()
-            #  this check is copy-past from origin. Not sure if it even
+            #  This check is a copy-paste from the origin. Not sure if it even
             #  possible to get this error
             if len(fasta_map_nuc) != len(fasta_map_pro):
                 #  probably do something with recently created files here
                 raise ValueError('Error: The number of genomes for protein/nucleotide '
                                  'sequences are not identical.')
             if self.config.align_mode != 'aa':
-
                 #  this step is specific to codon and codon12 mode
                 #  since here is required both and amino acid and nuc
                 #  seq files
@@ -224,12 +218,12 @@ class Aligner:
             self._bcg_list = write_file_from_map(
                 fasta_map_pro, self.config.postfixes.input_parsing_pro_const)
 
-
     def _align(self):
         """
-        Step to process multiple sequences alignment and run gap filtering
+        Step processing multiple sequences alignment and run gap filtering
         after it
         """
+
         def filter_genomes_by_frequency(postfix):
             #  here we place gene names that satisfy out criteria that it
             #  have to occur at least in 3 genomes since mafft can make
@@ -237,7 +231,7 @@ class Aligner:
             filtered_bcg = []
             bcg_num = 0
             for gene in self._bcg_list:
-                bcg = os.path.join(self._align_inputparse_with_prefix, gene+postfix)
+                bcg = os.path.join(self._align_inputparse_with_prefix, gene + postfix)
                 fsl = FastaSeqList(bcg)
                 fsl_len = fsl.get_seq_list_len()
                 if fsl_len > 3:
@@ -266,12 +260,12 @@ class Aligner:
         #  Gaps = `-` symbols in sequence we get after alignment.
 
         for gene in self._bcg_filtered_in_align:
-            #  make alignment for every gene
+            #  make an alignment for each gene
             LOGGER.info('Process alignment for %s', gene)
             self._genes_processed_with_mafft.append(self._mafft.run(gene))
 
         if self.config.align_mode in ('nt', 'aa'):
-        #  in nt and aa mode we use only pro for nt and nuc seq for aa mode
+            #  in nt and aa mode we use only pro for nt and nuc seq for aa mode
             for gene in self._genes_processed_with_mafft:
                 LOGGER.info('Run gap fileting for %s', gene)
                 self._filtering_gap_dna(gene)
@@ -283,7 +277,6 @@ class Aligner:
                 LOGGER.info('Run gap fileting for %s', gene)
                 dna_file, gene = self._filtering_gap_pro(gene)
                 self._filtering_gap_dna((dna_file, gene))
-
 
     def _filtering_gap_pro(self, data: tuple):
         """
@@ -306,7 +299,7 @@ class Aligner:
                 if nuc == '-':
                     # TODO: Why x3 ?
                     insert_pos = 3 * nuc_idx
-                    dna_seq = dna_seq[:insert_pos]+'---'+dna_seq[insert_pos:]
+                    dna_seq = dna_seq[:insert_pos] + '---' + dna_seq[insert_pos:]
             #  specific to codon12 mode
             if self.config.align_mode == 'codon12':
                 codon12 = ''
@@ -318,10 +311,9 @@ class Aligner:
                 dna_fasta_seq.seq = dna_seq
         file_path = os.path.join(
             self._align_align_with_prefix,
-            gene+self.config.postfixes.align_align_const)
+            gene + self.config.postfixes.align_align_const)
         fasta_dna_list.write_file(file_path)
         return file_path, gene
-
 
     def _filtering_gap_dna(self, data):
         """
@@ -350,9 +342,8 @@ class Aligner:
             fasta_seq.seq = temp_seq
         #
         output_path = os.path.join(self._align_filtering_output_with_prefix,
-                                   gene+self.config.postfixes.align_align_const)
+                                   gene + self.config.postfixes.align_align_const)
         con_fasta_seq_list.write_file(output_path)
-
 
     def _concatenating(self):
         """
@@ -371,7 +362,7 @@ class Aligner:
         gene_fasta_seq_list_map = {}
         for gene in self._bcg_filtered_in_align:
             file_name = os.path.join(self._align_filtering_output_with_prefix,
-                                     gene+self.config.postfixes.align_align_const)
+                                     gene + self.config.postfixes.align_align_const)
             fasta_seq_list = FastaSeqList(file_name)
             if not all(len(fasta.seq) == fasta_seq_list.get_seq_len()
                        for fasta in fasta_seq_list.get_seq_list()):
@@ -400,10 +391,10 @@ class Aligner:
         for line in concatenated_fasta:
             if line[0] in ('>', '\n'):
                 path = os.path.join(self._align_concatenating_output_with_prefix,
-                                    'concat_'+line.strip().replace('>', '')+'.fasta')
+                                    'concat_' + line.strip().replace('>', '') + '.fasta')
             else:
                 with open(path, 'w') as ouf:
-                    ouf.write('>'+path+'\n')
+                    ouf.write('>' + path + '\n')
                     ouf.write(line)
         with open(output_file, 'w') as f:
             f.write(''.join(concatenated_fasta))

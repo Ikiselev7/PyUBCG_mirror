@@ -6,7 +6,6 @@
 
 import logging
 import os
-
 from Bio import Phylo
 from Bio.Phylo import Consensus
 
@@ -73,7 +72,7 @@ class TreeBuilder:
                                            self.config.postfixes.align_tree_const), 'newick')
             Phylo.draw(tree,
                        savefig={'fname': os.path.join(self._align_output_dir,
-                                                      self.config.align_prefix+'.png'),
+                                                      self.config.align_prefix + '.png'),
                                 'dpi': 300, 'bbox_inches': 'tight'})
 
         # FIXME
@@ -86,7 +85,7 @@ class TreeBuilder:
         """
         for bcg in self._target_gene_list:
             tree_input_file = os.path.join(self._all_trees_input_dir,
-                                           bcg+self.config.postfixes.
+                                           bcg + self.config.postfixes.
                                            align_align_const)
             tree_output_file = os.path.join(self._tree_output_dir, bcg +
                                             self.config.postfixes.
@@ -104,8 +103,8 @@ class TreeBuilder:
         """
         get_args = {
             'get_args': lambda model, mode:
-                        [get_args['have_model'], get_args['no_model']][model is None]
-                        (model, mode),
+            [get_args['have_model'], get_args['no_model']][model is None]
+            (model, mode),
             'have_model': lambda x, y: get_args[x.lower()],
             'no_model': lambda x, y: [] if y == 'aa' else get_args['gtrcat'],
             'jttcat': [],
@@ -122,6 +121,7 @@ class TreeBuilder:
         args = get_args['get_args'](self.config.model,
                                     self.config.align_mode)
         return args
+
     # pylint: enable=unnecessary-lambda
 
     def _reconstruct_gene_trees(self):
@@ -137,7 +137,7 @@ class TreeBuilder:
         ubcg_gene = self.config.biological.ubcg_gene
         for bcg in ubcg_gene:
             gene_tree_file = os.path.join(self._all_trees_input_dir,
-                                          bcg+self.config.postfixes.
+                                          bcg + self.config.postfixes.
                                           align_align_const)
             if os.path.isfile(gene_tree_file) is True:
                 fsl = FastaSeqList(gene_tree_file)
@@ -159,11 +159,11 @@ class TreeBuilder:
         merged_trees = []
         for bcg in self._target_gene_list:
             gene_tree_file = os.path.join(self._tree_output_dir,
-                                          bcg+self.config.postfixes.
+                                          bcg + self.config.postfixes.
                                           align_tree_const)
             try:
                 with open(gene_tree_file) as f:
-                    merged_trees.append(f.readline()+'\n')
+                    merged_trees.append(f.readline() + '\n')
             except FileExistsError as ex:
                 LOGGER.error('Cannot read a gene tree %s', gene_tree_file)
                 raise ex
@@ -190,7 +190,7 @@ class TreeBuilder:
         nwk_file = os.path.join(self._align_output_dir, "all_gene.trees")
         trees = Phylo.parse(nwk_file, 'newick')
         tree = Consensus.majority_consensus(trees,
-                                            cutoff=(100-self.config.gsi_threshold) * genome_num/100)
+                                            cutoff=(100 - self.config.gsi_threshold) * genome_num / 100)
         Phylo.draw_ascii(tree)
         ubcg_gsi_file = os.path.join(self._align_output_dir,
                                      f'UBCG_gsi({self._bcg_num}'

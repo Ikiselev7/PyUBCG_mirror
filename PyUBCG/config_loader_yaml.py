@@ -4,15 +4,18 @@
 
 """
 
-#pylint: disable=cyclic-import
+# pylint: disable=cyclic-import
 from PyUBCG.abc import AbstractConfigLoader
 from PyUBCG.utils import read_config_from_path, AttrDict
-#pylint: enable=cyclic-import
+
+
+# pylint: enable=cyclic-import
 
 class ConfigLoaderYaml(AbstractConfigLoader):
     """
     Class to load config object from .yaml file
     """
+
     def load_config(self, path: str, args):
         """
         Method to load config from .yaml file

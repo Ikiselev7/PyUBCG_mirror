@@ -1,8 +1,6 @@
-import shutil
-import builtins
+import pytest
 import subprocess
 from unittest import mock
-import pytest
 
 from PyUBCG.app import Main
 
